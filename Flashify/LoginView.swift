@@ -8,7 +8,7 @@ struct LoginView: View {
 
 
     var body: some View {
-        NavigationStack { 
+        NavigationStack {
             ZStack {
                 LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color.white]),
                                startPoint: .top,
@@ -17,8 +17,8 @@ struct LoginView: View {
                 
                 VStack(spacing: 20) {
                     Text("Welcome Back")
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(Color(hex: "333333"))
+                        .font(Font.custom("Teko-Bold", size: 36))
+                        .foregroundColor(Color(hex: "4D4E8C"))
                         .padding(.top, 50.0)
                     
                     VStack(spacing: 12) {
