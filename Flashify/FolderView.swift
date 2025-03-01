@@ -83,7 +83,7 @@ struct FolderView: View {
                         LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 2), spacing: 16) {
                             ForEach(flashcards, id: \.self) { flashcard in
                                 Text(flashcard)
-                                    .font(Font.custom("Teko-Bold", size: 36))
+                                    .font(Font.custom("Teko-Bold", size: 16))
                                     .foregroundColor(.white)
                                     .padding()
                                     .frame(height: 120)
@@ -98,7 +98,7 @@ struct FolderView: View {
                         VStack(spacing: 12) {
                             ForEach(chapters, id: \.self) { chapter in
                                 Text(chapter)
-                                    .font(Font.custom("Teko-Bold", size: 36))
+                                    .font(Font.custom("Teko-Bold", size: 26))
                                     .foregroundColor(.white)
                                     .padding()
                                     .frame(maxWidth: .infinity)
