@@ -15,36 +15,32 @@ struct FlashcardView: View {
     
     var body: some View {
         VStack {
-            // Entire Flashcard is clickable (Button)
             Button(action: {
                 withAnimation(.easeInOut(duration: 0.6)) {
-                    flipped.toggle()  // Flip the card on tap
+                    flipped.toggle()
                 }
             }) {
                 ZStack {
-                    // Front of the card (question)
                     CardFace(content: question, isShowing: !flipped)
                     
-                    // Back of the card (answer)
                     CardFace(content: answer, isShowing: flipped)
                         .rotation3DEffect(
-                            .degrees(180), // Keep this permanently rotated 180Â°
+                            .degrees(180),
                             axis: (x: 0, y: 1, z: 0)
                         )
                 }
                 .rotation3DEffect(
-                    .degrees(flipped ? 180 : 0), // Rotate 180 degrees when flipped
-                    axis: (x: 0, y: 1, z: 0), // Rotate around the Y-axis
-                    perspective: 0.5 // Perspective to make it look like a real flip
+                    .degrees(flipped ? 180 : 0),
+                    axis: (x: 0, y: 1, z: 0),
+                    perspective: 0.5
                 )
             }
-            .buttonStyle(PlainButtonStyle()) // Remove default button styling
+            .buttonStyle(PlainButtonStyle())
         }
         .background(Color.white.edgesIgnoringSafeArea(.all))
     }
 }
 
-// Helper view for card faces
 struct CardFace: View {
     let content: String
     let isShowing: Bool
