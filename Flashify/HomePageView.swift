@@ -3,6 +3,7 @@ import SwiftUI
 struct HomePageView: View {
     @State private var selectedFolder: String? = nil
     @State private var isProfilePopupVisible = false
+    @State private var isNewFolderVisible = false
 
     let folders = ["Mathematics", "Literature", "Biology", "Grammar", "History", "DSA"]
 
@@ -45,7 +46,10 @@ struct HomePageView: View {
                                     .background(Color.white)
                                     .cornerRadius(10)
                                 Button(action: {
-                                    print("Add new folder")
+                                    withAnimation {
+                                        isNewFolderVisible
+                                            .toggle()
+                                    }
                                 }) {
                                     Image(systemName: "plus.square.fill")
                                         .resizable()
@@ -98,6 +102,20 @@ struct HomePageView: View {
                     ProfilePopupView(isVisible: $isProfilePopupVisible)
                         .transition(.scale)
                         .zIndex(1)
+                }
+                if isNewFolderVisible{
+                    Color.black.opacity(0.3)
+                        .edgesIgnoringSafeArea(.all)
+                        .onTapGesture {
+                            withAnimation {
+                                isNewFolderVisible = false
+                            }
+                        }
+
+                    CreateNewFolderView(isVisible: $isNewFolderVisible)
+                        .transition(.scale)
+                        .zIndex(1)
+                
                 }
             }
         }
