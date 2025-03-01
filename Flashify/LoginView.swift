@@ -16,18 +16,21 @@ struct LoginView: View {
                 .edgesIgnoringSafeArea(.all)
                 
                 VStack(spacing: 20) {
-                    Text("Welcome to Flashify")
+                    Text("Welcome Back")
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(Color(hex: "333333"))
+                        .padding(.top, 50.0)
                     
                     VStack(spacing: 12) {
                         TextField("Email", text: $email)
+                            .frame(width: 200.0)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .padding(.horizontal)
+                            .padding(.all)
                         
                         SecureField("Password", text: $password)
+                            .frame(width: 200.0)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .padding(.horizontal)
+                            .padding([.leading, .bottom, .trailing])
                     }
                     
                     Button(action: {
@@ -36,11 +39,13 @@ struct LoginView: View {
                         Text("Sign In")
                             .frame(maxWidth: .infinity)
                             .padding()
+                            .frame(width: 200.0)
                             .background(Color(hex: "7B83EB"))
                             .foregroundColor(.white)
                             .cornerRadius(8)
                     }
                     .padding(.horizontal)
+                    .frame(width: 200.0)
                     
                     // Sign up link
                     HStack {
@@ -54,6 +59,7 @@ struct LoginView: View {
                                 .fontWeight(.bold)
                         }
                     }
+                    .padding(.bottom, 50.0)
                     .font(.footnote)
                     
                     .navigationDestination(isPresented: $isNavigatingToSignUp) {
@@ -63,17 +69,13 @@ struct LoginView: View {
                         HomePageView()
                     }
                 }
-                .padding()
+//                .padding()
                 .frame(maxWidth: 350)
                 .background(Color.white)
                 .cornerRadius(16)
                 .shadow(radius: 10)
-                .navigationBarBackButtonHidden(true)
-
             }
-
         }
-
     }
 }
 
