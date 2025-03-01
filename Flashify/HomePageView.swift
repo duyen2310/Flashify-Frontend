@@ -86,6 +86,7 @@ struct HomePageView: View {
                         }
                     }
                     .padding(.horizontal)
+                    .navigationBarBackButtonHidden(true)
 
                 }
                 .frame(maxWidth: .infinity)

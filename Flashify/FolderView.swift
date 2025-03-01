@@ -9,7 +9,7 @@ import SwiftUI
 struct FolderView: View {
     var folderName: String
     @State private var showChatify: Bool = false
-
+    @State private var showCreatePopup: Bool = false
     @State private var selectedTab: String = "Flashcards"
     
     let flashcards = [
@@ -48,11 +48,20 @@ struct FolderView: View {
                 Spacer()
                 
                 Button(action: {
+                    showCreatePopup.toggle()
                 }) {
                     Image(systemName: "plus")
                         .font(.title2)
                         .foregroundColor(.white)
                 }
+                .sheet(isPresented: $showCreatePopup) {
+                    if selectedTab == "Flashcards" {
+                        CreateFlashcardView()
+                    } else {
+                        CreateNoteView()
+                    }
+                }
+            
             }
             .padding(.horizontal)
             .padding(.vertical, 10)
