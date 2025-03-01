@@ -8,6 +8,8 @@ import SwiftUI
 
 struct FolderView: View {
     var folderName: String
+    @State private var showChatify: Bool = false
+
     @State private var selectedTab: String = "Flashcards"
     
     let flashcards = [
@@ -58,7 +60,7 @@ struct FolderView: View {
             .background(
                 LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color(hex: "4D4D9A")]), startPoint: .top, endPoint: .bottom)
             )
-
+            
             HStack {
                 Button(action: { selectedTab = "Flashcards" }) {
                     Text("Flashcards")
@@ -118,6 +120,7 @@ struct FolderView: View {
             Spacer()
             
             Button(action: {
+                showChatify.toggle()
             }) {
                 Image(systemName: "command")
                     .font(.largeTitle)
@@ -128,7 +131,9 @@ struct FolderView: View {
             }
             .padding(.bottom, 20)
             .padding(.trailing, 20)
-
+            .sheet(isPresented: $showChatify) {
+                ChatifyView()
+            }
         }
         .edgesIgnoringSafeArea(.top)
         .background(Color(hex: "E8EBFA").edgesIgnoringSafeArea(.all))
