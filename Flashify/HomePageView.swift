@@ -8,7 +8,8 @@ import SwiftUI
 
 struct HomePageView: View {
     @State private var selectedFolder: String? = nil
-    
+    @State private var isProfilePopupVisible = false
+
     let folders = ["Mathematics", "Literature", "Biology", "Grammar", "History", "DSA"]
 
     var body: some View {
@@ -32,13 +33,14 @@ struct HomePageView: View {
                                 .foregroundColor(.white)
                             Spacer()
                             Button(action: {
-                                print("Profile tapped")
+                                isProfilePopupVisible.toggle()
                             }) {
                                 Image(systemName: "person.crop.circle")
                                     .resizable()
                                     .frame(width: 28, height: 28)
                                     .foregroundColor(.white)
                             }
+
                         }
                         .padding(.horizontal)
                         .padding(.top, -50.0)
@@ -96,6 +98,10 @@ struct HomePageView: View {
             .background(Color(hex: "E8EBFA").edgesIgnoringSafeArea(.all))
         }
         .navigationBarBackButtonHidden(true)
+        .sheet(isPresented: $isProfilePopupVisible) {
+            ProfilePopupView()
+        }
+
 
     }
 

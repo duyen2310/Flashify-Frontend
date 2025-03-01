@@ -11,7 +11,8 @@ struct FolderView: View {
     @State private var showChatify: Bool = false
     @State private var showCreatePopup: Bool = false
     @State private var selectedTab: String = "Flashcards"
-    
+    @Environment(\.dismiss) var dismiss
+
     let flashcards = [
         "In what way does calculus contribute to the field of engineering?",
         "How does calculus contribute to advancement in computer science?",
@@ -31,7 +32,7 @@ struct FolderView: View {
     var body: some View {
         VStack {
             HStack {
-                Button(action: {
+                Button(action: { dismiss()
                 }) {
                     Image(systemName: "chevron.left")
                         .font(.title2)

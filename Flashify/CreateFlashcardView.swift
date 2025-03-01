@@ -7,10 +7,11 @@ struct CreateFlashcardView: View {
     @State private var answer: String = ""
     @State private var topic: String = ""
     @State private var createOption: String = "Manually"
-
+    @State private var selectedFileURL: URL?
+    @State private var showingFileImporter = false
     var body: some View {
         ZStack {
-            Color.clear
+            Color.black.opacity(0.4)
                 .edgesIgnoringSafeArea(.all)
 
             VStack(spacing: 20) {
@@ -49,19 +50,53 @@ struct CreateFlashcardView: View {
                         .background(Color.gray.opacity(0.1))
                         .cornerRadius(8)
                     
-                    TextEditor(text: $answer)
+                    TextField("Answer",text: $answer)
                         .frame(height: 120)
                         .padding()
                         .background(Color.gray.opacity(0.1))
                         .cornerRadius(8)
                 } else {
-                    TextField("Enter Topic to Generate Flashcards", text: $topic)
-                        .padding()
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(8)
-                }
+                    VStack(spacing: 20) {
+                            Button(action: {
+                                showingFileImporter = true
+                            }) {
+                                VStack {
+                                    Image(systemName: "doc.badge.plus")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 50, height: 50)
+                                        .foregroundColor(.black)
 
-                // Action buttons
+                                    Text("Upload File")
+                                        .foregroundColor(.black)
+                                }
+                                .padding()
+                                .frame(maxWidth: .infinity, minHeight: 150)
+                                .background(Color.gray.opacity(0.1))
+                                .cornerRadius(8)
+                            }
+                            .fileImporter(
+                                isPresented: $showingFileImporter,
+                                allowedContentTypes: [.plainText, .json],
+                                onCompletion: { result in
+                                    switch result {
+                                    case .success(let url):
+                                        selectedFileURL = url
+                                        print("Selected file: \(url.lastPathComponent)")
+                                    case .failure(let error):
+                                        print("File import failed: \(error.localizedDescription)")
+                                    }
+                                }
+                            )
+
+                            if let fileURL = selectedFileURL {
+                                Text("Selected file: \(fileURL.lastPathComponent)")
+                                    .foregroundColor(.blue)
+                                    .padding(.top)
+                            }
+                        }
+                    }
+
                 HStack {
                     Button(action: {
                         if createOption == "Manually" {

@@ -4,7 +4,6 @@
 //
 //  Created by Ky Duyen on 1/3/25.
 //
-
 import SwiftUI
 
 struct CreateNoteView: View {
@@ -13,6 +12,8 @@ struct CreateNoteView: View {
     @State private var note: String = ""
     @State private var topic: String = ""
     @State private var createOption: String = "Manually"
+    @State private var selectedFileURL: URL?
+    @State private var showingFileImporter = false
     
     var body: some View {
         VStack(spacing: 20) {
@@ -51,19 +52,52 @@ struct CreateNoteView: View {
                     .background(Color.gray.opacity(0.1))
                     .cornerRadius(8)
             } else {
-                TextField("check", text: $topic)
-                    .padding()
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(8)
-            }
+                VStack(spacing: 20) {
+                        Button(action: {
+                            showingFileImporter = true
+                        }) {
+                            VStack {
+                                Image(systemName: "doc.badge.plus")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 50, height: 50)
+                                    .foregroundColor(.black)
+
+                                Text("Upload File")
+                                    .foregroundColor(.black)
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity, minHeight: 150)
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(8)
+                        }
+                        .fileImporter(
+                            isPresented: $showingFileImporter,
+                            allowedContentTypes: [.plainText, .json],
+                            onCompletion: { result in
+                                switch result {
+                                case .success(let url):
+                                    selectedFileURL = url
+                                    print("Selected file: \(url.lastPathComponent)")
+                                case .failure(let error):
+                                    print("File import failed: \(error.localizedDescription)")
+                                }
+                            }
+                        )
+
+                        if let fileURL = selectedFileURL {
+                            Text("Selected file: \(fileURL.lastPathComponent)")
+                                .foregroundColor(.blue)
+                                .padding(.top)
+                        }
+                    }
+                }
             
             HStack {
                 Button(action: {
                     if createOption == "Manually" {
-                        
                         print("Manually Added Flashcard")
                     } else {
-                        
                         print("Generating flashcards for topic")
                     }
                     dismiss()
@@ -94,11 +128,8 @@ struct CreateNoteView: View {
         .cornerRadius(20)
         .shadow(radius: 10)
         .frame(width: 350, height: 450)
-
     }
 }
-
-
 #Preview {
     CreateNoteView()
 }
