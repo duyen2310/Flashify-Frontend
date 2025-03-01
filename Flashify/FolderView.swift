@@ -3,6 +3,7 @@ import SwiftUI
 struct FolderView: View {
     var folderName: String
     @State private var showChatify: Bool = false
+    @State private var showChapter: Bool = false
     @State private var showCreatePopup: Bool = false
     @State private var selectedTab: String = "Flashcards"
     @Environment(\.dismiss) var dismiss
@@ -97,13 +98,18 @@ struct FolderView: View {
                     } else {
                         VStack(spacing: 12) {
                             ForEach(chapters, id: \.self) { chapter in
-                                Text(chapter)
-                                    .font(Font.custom("Teko-Bold", size: 26))
-                                    .foregroundColor(.white)
-                                    .padding()
-                                    .frame(maxWidth: .infinity)
-                                    .background(LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color(hex: "4D4D9A")]), startPoint: .topLeading, endPoint: .bottomTrailing))
-                                    .cornerRadius(12)
+                                Button(action: {
+                                    showChapter = true
+                                }) {
+                                    Text(chapter)
+                                        .font(Font.custom("Teko-Bold", size: 26))
+                                        .foregroundColor(.white)
+                                        .padding()
+                                        .frame(maxWidth: .infinity)
+                                        .background(LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color(hex: "4D4D9A")]), startPoint: .topLeading, endPoint: .bottomTrailing))
+                                        .cornerRadius(12)
+                                }
+                                .buttonStyle(PlainButtonStyle())
                             }
                         }
                         .padding()
@@ -133,7 +139,20 @@ struct FolderView: View {
         .edgesIgnoringSafeArea(.top)
         .background(Color(hex: "E8EBFA").edgesIgnoringSafeArea(.all))
         .navigationBarBackButtonHidden(true)
-
+            
+            if showChapter {
+                Color.black.opacity(0.3)
+                    .edgesIgnoringSafeArea(.all)
+                    .onTapGesture {
+                        showChapter = false
+                    }
+                ChapterNoteView(isVisible: $showChapter)
+                    .frame(width: 380, height: 750)
+                    .background(Color.white)
+                    .cornerRadius(20)
+                    .shadow(radius: 10)
+                    .transition(.scale)
+            }
             if showCreatePopup {
                 Color.black.opacity(0.3)
                     .edgesIgnoringSafeArea(.all)
