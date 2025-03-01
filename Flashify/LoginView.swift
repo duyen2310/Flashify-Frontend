@@ -68,8 +68,12 @@ struct LoginView: View {
                 .background(Color.white)
                 .cornerRadius(16)
                 .shadow(radius: 10)
+                .navigationBarBackButtonHidden(true)
+
             }
+
         }
+
     }
 }
 

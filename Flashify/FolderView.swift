@@ -83,7 +83,6 @@ struct FolderView: View {
             
             ScrollView {
                 if selectedTab == "Flashcards" {
-                    // Flashcards Grid
                     LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 2), spacing: 16) {
                         ForEach(flashcards, id: \.self) { flashcard in
                             Text(flashcard)
@@ -133,6 +132,8 @@ struct FolderView: View {
         }
         .edgesIgnoringSafeArea(.top)
         .background(Color(hex: "E8EBFA").edgesIgnoringSafeArea(.all))
+        .navigationBarBackButtonHidden(true)
+
     }
 }
 
