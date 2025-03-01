@@ -90,7 +90,8 @@ struct CreateNoteView: View {
                                 .foregroundColor(.blue)
                                 .padding(.top)
                         }
-                    }
+                }
+                .padding(.vertical, 40.0)
                 }
             
             HStack {
