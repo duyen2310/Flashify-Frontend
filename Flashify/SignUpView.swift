@@ -24,25 +24,37 @@ struct SignUpView: View {
                 VStack(spacing: 20) {
                     Text("Welcome to Flashify")
                         .padding(.top, 50)
-                    .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(Color(hex: "333333"))
+                        .font(Font.custom("Teko-Bold", size: 36))                        .foregroundColor(Color(hex: "4D4E8C"))
 
-                    VStack(spacing: 12) {
+                    VStack(spacing: 25) {
                         TextField("Username", text: $username)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
                             .padding(.all)
-                        .frame(width: 250)
-                        
+                            .frame(width: 250, height: 50)
+                            .background(Color.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(hex: "E1E1E1"), lineWidth: 3)
+                            )
+
 
                         TextField("Email", text: $email)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .padding([.leading, .bottom, .trailing])
-                        .frame(width: 250)
+                            .padding(.all)
+                            .frame(width: 250, height: 50)
+                            .background(Color.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(hex: "E1E1E1"), lineWidth: 3)
+                            )
 
                         SecureField("Password", text: $password)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .padding(.horizontal)
-                            .frame(width: 250)
+                            .padding(.all)
+                            .frame(width: 250, height: 50)
+                            .background(Color.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(hex: "E1E1E1"), lineWidth: 3)
+                            )
+
                 }
 
                     // BACKEND
@@ -50,7 +62,7 @@ struct SignUpView: View {
                         isNavigatingToHomePage = true
                     }) {
                         Text("Sign Up")
-                            .frame(width: 200)
+                            .frame(width: 220)
                             .padding()
                             .background(Color(hex: "7B83EB"))
                             .foregroundColor(.white)

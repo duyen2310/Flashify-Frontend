@@ -2,8 +2,7 @@ import SwiftUI
 
 struct HomePageView: View {
     @State private var selectedFolder: String? = nil
-    @State private var isProfilePopupVisible = false
-
+    
     let folders = ["Mathematics", "Literature", "Biology", "Grammar", "History", "DSA"]
 
     var body: some View {
@@ -19,16 +18,62 @@ struct HomePageView: View {
                             .edgesIgnoringSafeArea(.all)
                             .shadow(radius: 5)
 
-                        VStack(spacing: 10) {
-                            HStack {
-                                Text("Flashify")
-                                    .font(.title)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(.white)
-                                Spacer()
-                                Button(action: {
+
+
+                    VStack(spacing: 10) {
+                        HStack {
+                            Text("Flashify")
+                                .font(Font.custom("Teko-Bold", size: 36))
+                                .foregroundColor(.white)
+                            Spacer()
+                            Button(action: {
                                     withAnimation {
                                         isProfilePopupVisible.toggle()
+                            }) {
+                                Image(systemName: "person.crop.circle")
+                                    .resizable()
+                                    .frame(width: 28, height: 28)
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, -50.0)
+
+                        HStack {
+                            TextField("Search folders", text: .constant(""))
+                                .padding(10)
+                                .background(Color.white)
+                                .cornerRadius(10)
+                            Button(action: {
+                                print("Add new folder")
+                            }) {
+                                Image(systemName: "plus.square.fill")
+                                    .resizable()
+                                    .frame(width: 28, height: 28)
+                                    .foregroundColor(Color(hex: "7B83EB"))
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.bottom, 30.0)
+                    }
+                }
+
+                ScrollView {
+                    LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 3), spacing: 20) {
+                        ForEach(folders, id: \.self) { folder in
+                            NavigationLink(destination: FolderView(folderName: folder), tag: folder, selection: $selectedFolder) {
+                                Button(action: {
+                                    selectedFolder = folder // set the folder selected
+                                }) {
+                                    VStack {
+                                        Image(systemName: "folder")
+                                            .resizable()
+                                            .frame(width: 60, height: 50)
+                                            .foregroundColor(Color(hex: "7B83EB"))
+                                        Text(folder)
+                                            .font(Font.custom("Teko-Bold", size: 16))
+                                            .foregroundColor(Color(hex:"4D4D9A"))
+
                                     }
                                 }) {
                                     Image(systemName: "person.crop.circle")
@@ -105,6 +150,7 @@ struct HomePageView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+
     }
 }
 
