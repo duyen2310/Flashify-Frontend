@@ -8,8 +8,7 @@ import SwiftUI
 
 struct HomePageView: View {
     @State private var selectedFolder: String? = nil
-    @State private var isProfilePopupVisible = false
-
+    
     let folders = ["Mathematics", "Literature", "Biology", "Grammar", "History", "DSA"]
 
     var body: some View {
@@ -28,19 +27,17 @@ struct HomePageView: View {
                     VStack(spacing: 10) {
                         HStack {
                             Text("Flashify")
-                                .font(.title)
-                                .fontWeight(.bold)
+                                .font(Font.custom("Teko-Bold", size: 36))
                                 .foregroundColor(.white)
                             Spacer()
                             Button(action: {
-                                isProfilePopupVisible.toggle()
+                                print("Profile tapped")
                             }) {
                                 Image(systemName: "person.crop.circle")
                                     .resizable()
                                     .frame(width: 28, height: 28)
                                     .foregroundColor(.white)
                             }
-
                         }
                         .padding(.horizontal)
                         .padding(.top, -50.0)
@@ -77,9 +74,8 @@ struct HomePageView: View {
                                             .frame(width: 60, height: 50)
                                             .foregroundColor(Color(hex: "7B83EB"))
                                         Text(folder)
-                                            .font(.caption)
-                                            .fontWeight(.semibold)
-                                            .foregroundColor(.black)
+                                            .font(Font.custom("Teko-Bold", size: 16))
+                                            .foregroundColor(Color(hex:"4D4D9A"))
                                     }
                                     .frame(maxWidth: .infinity)
                                 }
@@ -98,10 +94,6 @@ struct HomePageView: View {
             .background(Color(hex: "E8EBFA").edgesIgnoringSafeArea(.all))
         }
         .navigationBarBackButtonHidden(true)
-        .sheet(isPresented: $isProfilePopupVisible) {
-            ProfilePopupView()
-        }
-
 
     }
 
@@ -127,4 +119,3 @@ struct RoundedCorner: Shape {
 #Preview {
     HomePageView()
 }
-

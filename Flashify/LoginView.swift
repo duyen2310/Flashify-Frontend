@@ -19,19 +19,29 @@ struct LoginView: View {
                     Text("Welcome Back")
                         .font(Font.custom("Teko-Bold", size: 36))
                         .foregroundColor(Color(hex: "4D4E8C"))
-                        .padding(.top, 50.0)
+                        .padding(.top, 75.0)
                     
-                    VStack(spacing: 12) {
+                    VStack(spacing: 25) {
                         TextField("Email", text: $email)
-                            .frame(width: 200.0)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
                             .padding(.all)
-                        
+                            .frame(width: 250, height: 50)
+                            .background(Color.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(hex: "E1E1E1"), lineWidth: 3)
+                            )
+
                         SecureField("Password", text: $password)
-                            .frame(width: 200.0)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .padding([.leading, .bottom, .trailing])
+                            .padding(.all)
+                            .frame(width: 250, height: 50)
+                            .background(Color.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color(hex: "E1E1E1"), lineWidth: 3)
+                            )
+
                     }
+                    .padding(.top)
                     
                     Button(action: {
                         isNavigatingToHomePage = true
@@ -39,13 +49,13 @@ struct LoginView: View {
                         Text("Sign In")
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .frame(width: 200.0)
+                            .frame(width: 250.0)
                             .background(Color(hex: "7B83EB"))
                             .foregroundColor(.white)
                             .cornerRadius(8)
                     }
-                    .padding(.horizontal)
-                    .frame(width: 200.0)
+                    .padding([.top, .leading, .trailing])
+                    .frame(width: 220.0)
                     
                     // Sign up link
                     HStack {

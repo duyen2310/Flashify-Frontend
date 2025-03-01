@@ -17,8 +17,7 @@ struct SplashLogoView: View {
                        
 
             Text("Flashify")
-                .font(.system(size: 50, weight: .bold))
-                .foregroundColor(.white)
+                .font(Font.custom("Teko-Bold", size: 96))                .foregroundColor(.white)
                 .shadow(radius: 5)
         }
     }
