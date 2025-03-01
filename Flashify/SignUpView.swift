@@ -22,21 +22,26 @@ struct SignUpView: View {
             
             VStack(spacing: 20) {
                 Text("Welcome to Flashify")
+                    .padding(.top, 50)
                     .font(.system(size: 24, weight: .bold))
                     .foregroundColor(Color(hex: "333333"))
                 
                 VStack(spacing: 12) {
                     TextField("Username", text: $username)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding(.horizontal)
+                        .padding(.all)
+                        .frame(width: 250)
+                        
                     
                     TextField("Email", text: $email)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding(.horizontal)
+                        .padding([.leading, .bottom, .trailing])
+                        .frame(width: 250)
                     
                     SecureField("Password", text: $password)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding(.horizontal)
+                        .frame(width: 250)
                 }
                 
                 // signUp button
@@ -45,13 +50,14 @@ struct SignUpView: View {
                     print("Sign Up tapped")
                 }) {
                     Text("Sign Up")
-                        .frame(maxWidth: .infinity)
+                        .frame(width: 200)
                         .padding()
                         .background(Color(hex: "7B83EB"))
                         .foregroundColor(.white)
                         .cornerRadius(8)
                 }
-                .padding(.horizontal)
+                .frame(width: 200.0)
+                .padding()
                 
                 // sigIn link
                 HStack {
@@ -65,6 +71,7 @@ struct SignUpView: View {
                             .fontWeight(.bold)
                     }
                 }
+                .padding(.bottom, 50)
                 .font(.footnote)
             }
             .padding()
