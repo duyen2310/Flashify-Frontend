@@ -1,0 +1,66 @@
+//
+//  FlashcardView.swift
+//  Flashify
+//
+//  Created by Aum Zaveri on 2025-03-01.
+//
+import SwiftUI
+
+struct FlashcardView: View {
+    @Environment(\.dismiss) var dismiss
+    @Binding var isVisible: Bool
+    @State private var question: String = "In what way does calculus contribute to the field of engineering?"
+    @State private var answer: String = "very very much"
+    @State private var flipped: Bool = false
+    
+    var body: some View {
+        VStack {
+            // Entire Flashcard is clickable (Button)
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.6)) {
+                    flipped.toggle()  // Flip the card on tap
+                }
+            }) {
+                ZStack {
+                    // Front of the card (question)
+                    CardFace(content: question, isShowing: !flipped)
+                    
+                    // Back of the card (answer)
+                    CardFace(content: answer, isShowing: flipped)
+                        .rotation3DEffect(
+                            .degrees(180), // Keep this permanently rotated 180Â°
+                            axis: (x: 0, y: 1, z: 0)
+                        )
+                }
+                .rotation3DEffect(
+                    .degrees(flipped ? 180 : 0), // Rotate 180 degrees when flipped
+                    axis: (x: 0, y: 1, z: 0), // Rotate around the Y-axis
+                    perspective: 0.5 // Perspective to make it look like a real flip
+                )
+            }
+            .buttonStyle(PlainButtonStyle()) // Remove default button styling
+        }
+        .background(Color.white.edgesIgnoringSafeArea(.all))
+    }
+}
+
+// Helper view for card faces
+struct CardFace: View {
+    let content: String
+    let isShowing: Bool
+    
+    var body: some View {
+        Text(content)
+            .font(Font.custom("Teko-Bold", size: 26))
+            .foregroundColor(Color(hex: "#7A7B9E"))
+            .frame(width: 300, height: 200)
+            .background(Color.white)
+            .cornerRadius(12)
+            .opacity(isShowing ? 1 : 0)
+    }
+}
+
+
+#Preview {
+    FlashcardView(isVisible: .constant(true))
+}

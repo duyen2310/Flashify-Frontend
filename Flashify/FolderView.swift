@@ -3,6 +3,7 @@ import SwiftUI
 struct FolderView: View {
     var folderName: String
     @State private var showChatify: Bool = false
+    @State private var showFlashcard: Bool = false
     @State private var showChapter: Bool = false
     @State private var showCreatePopup: Bool = false
     @State private var selectedTab: String = "Flashcards"
@@ -83,14 +84,19 @@ struct FolderView: View {
                     if selectedTab == "Flashcards" {
                         LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 2), spacing: 16) {
                             ForEach(flashcards, id: \.self) { flashcard in
-                                Text(flashcard)
-                                    .font(Font.custom("Teko-Bold", size: 16))
-                                    .foregroundColor(.white)
-                                    .padding()
-                                    .frame(height: 120)
-                                    .frame(maxWidth: .infinity)
-                                    .background(LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color(hex: "4D4D9A")]), startPoint: .topLeading, endPoint: .bottomTrailing))
-                                    .cornerRadius(12)
+                                Button(action: {
+                                    showFlashcard = true
+                                })
+                                {
+                                    Text(flashcard)
+                                        .font(Font.custom("Teko-Bold", size: 16))
+                                        .foregroundColor(.white)
+                                        .padding()
+                                        .frame(height: 120)
+                                        .frame(maxWidth: .infinity)
+                                        .background(LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color(hex: "4D4D9A")]), startPoint: .topLeading, endPoint: .bottomTrailing))
+                                        .cornerRadius(12)
+                                }
                                     .multilineTextAlignment(.center)
                             }
                         }
@@ -153,6 +159,22 @@ struct FolderView: View {
                     .shadow(radius: 10)
                     .transition(.scale)
             }
+            
+            if showFlashcard {
+                Color.black.opacity(0.3)
+                    .edgesIgnoringSafeArea(.all)
+                    .onTapGesture {
+                        showFlashcard = false
+                    }
+                FlashcardView(isVisible: $showFlashcard)
+                    .frame(width: 350, height: 300)
+                    .background(Color.white)
+                    .cornerRadius(20)
+                    .shadow(radius: 10)
+                    .transition(.scale)
+            
+            }
+            
             if showCreatePopup {
                 Color.black.opacity(0.3)
                     .edgesIgnoringSafeArea(.all)
