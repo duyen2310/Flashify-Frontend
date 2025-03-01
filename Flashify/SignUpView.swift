@@ -11,9 +11,10 @@ struct SignUpView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var isNavigatingToLogIn = false
+    @State private var isNavigatingToHomePage = false
 
     var body: some View {
-        NavigationStack {  // Wrap everything inside NavigationStack
+        NavigationStack {
             ZStack {
                 LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color.white]),
                                startPoint: .top,
@@ -46,7 +47,7 @@ struct SignUpView: View {
 
                     // BACKEND
                     Button(action: {
-                        print("Sign Up tapped")
+                        isNavigatingToHomePage = true
                     }) {
                         Text("Sign Up")
                             .frame(width: 200)
@@ -76,14 +77,15 @@ struct SignUpView: View {
                     .navigationDestination(isPresented: $isNavigatingToLogIn) {
                         LoginView()
                     }
+                    .navigationDestination(isPresented: $isNavigatingToHomePage) {
+                        HomePageView()
+                    }
                 }
                 .padding()
                 .frame(maxWidth: 350)
                 .background(Color.white)
                 .cornerRadius(16)
                 .shadow(radius: 10)
-                .navigationBarBackButtonHidden(true)
-
             }
         }
     }
