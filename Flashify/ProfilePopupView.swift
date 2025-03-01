@@ -7,6 +7,8 @@
 
 import SwiftUI
 struct ProfilePopupView: View {
+    @Binding var isVisible: Bool
+
     var body: some View {
         VStack {
             Text("Profile")
@@ -27,6 +29,16 @@ struct ProfilePopupView: View {
                 .cornerRadius(10)
                 .disabled(true)
 
+            Button("Close") {
+                withAnimation {
+                    isVisible = false
+                }
+            }
+            .padding()
+            .foregroundColor(.white)
+            .background(Color(hex: "7B83EB"))
+            .cornerRadius(10)
+
             Spacer()
         }
         .padding()
@@ -35,8 +47,4 @@ struct ProfilePopupView: View {
         .cornerRadius(20)
         .shadow(radius: 10)
     }
-}
-
-#Preview {
-    ProfilePopupView()
 }

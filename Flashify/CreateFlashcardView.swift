@@ -11,7 +11,7 @@ struct CreateFlashcardView: View {
     @State private var showingFileImporter = false
     var body: some View {
         ZStack {
-            Color.black.opacity(0.4)
+            Color.clear
                 .edgesIgnoringSafeArea(.all)
 
             VStack(spacing: 20) {

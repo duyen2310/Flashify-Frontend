@@ -1,9 +1,3 @@
-//
-//  HomePageView.swift
-//  Flashify
-//
-//  Created by Ky Duyen on 28/2/25.
-//
 import SwiftUI
 
 struct HomePageView: View {
@@ -14,99 +8,105 @@ struct HomePageView: View {
 
     var body: some View {
         NavigationView {
-            VStack {
-                ZStack {
-                    LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color(hex: "4D4D9A")]),
-                                   startPoint: .top,
-                                   endPoint: .bottom)
-                    .padding(.top, 0.0)
-                    .frame(height: 190)
-                    .clipShape(RoundedCorner(radius: 30, corners: [.bottomLeft, .bottomRight]))
-                    .edgesIgnoringSafeArea(.all)
-                    .shadow(radius: 5)
+            ZStack {
+                VStack {
+                    ZStack {
+                        LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color(hex: "4D4D9A")]),
+                                       startPoint: .top,
+                                       endPoint: .bottom)
+                            .frame(height: 190)
+                            .clipShape(RoundedCorner(radius: 30, corners: [.bottomLeft, .bottomRight]))
+                            .edgesIgnoringSafeArea(.all)
+                            .shadow(radius: 5)
 
-                    VStack(spacing: 10) {
-                        HStack {
-                            Text("Flashify")
-                                .font(.title)
-                                .fontWeight(.bold)
-                                .foregroundColor(.white)
-                            Spacer()
-                            Button(action: {
-                                isProfilePopupVisible.toggle()
-                            }) {
-                                Image(systemName: "person.crop.circle")
-                                    .resizable()
-                                    .frame(width: 28, height: 28)
+                        VStack(spacing: 10) {
+                            HStack {
+                                Text("Flashify")
+                                    .font(.title)
+                                    .fontWeight(.bold)
                                     .foregroundColor(.white)
-                            }
-
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, -50.0)
-
-                        HStack {
-                            TextField("Search folders", text: .constant(""))
-                                .padding(10)
-                                .background(Color.white)
-                                .cornerRadius(10)
-                            Button(action: {
-                                print("Add new folder")
-                            }) {
-                                Image(systemName: "plus.square.fill")
-                                    .resizable()
-                                    .frame(width: 28, height: 28)
-                                    .foregroundColor(Color(hex: "7B83EB"))
-                            }
-                        }
-                        .padding(.horizontal)
-                        .padding(.bottom, 30.0)
-                    }
-                }
-
-                ScrollView {
-                    LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 3), spacing: 20) {
-                        ForEach(folders, id: \.self) { folder in
-                            NavigationLink(destination: FolderView(folderName: folder), tag: folder, selection: $selectedFolder) {
+                                Spacer()
                                 Button(action: {
-                                    selectedFolder = folder // set the folder selected
-                                }) {
-                                    VStack {
-                                        Image(systemName: "folder")
-                                            .resizable()
-                                            .frame(width: 60, height: 50)
-                                            .foregroundColor(Color(hex: "7B83EB"))
-                                        Text(folder)
-                                            .font(.caption)
-                                            .fontWeight(.semibold)
-                                            .foregroundColor(.black)
+                                    withAnimation {
+                                        isProfilePopupVisible.toggle()
                                     }
-                                    .frame(maxWidth: .infinity)
+                                }) {
+                                    Image(systemName: "person.crop.circle")
+                                        .resizable()
+                                        .frame(width: 28, height: 28)
+                                        .foregroundColor(.white)
                                 }
-                                .buttonStyle(PlainButtonStyle())
                             }
+                            .padding(.horizontal)
+                            .padding(.top, -50.0)
+
+                            HStack {
+                                TextField("Search folders", text: .constant(""))
+                                    .padding(10)
+                                    .background(Color.white)
+                                    .cornerRadius(10)
+                                Button(action: {
+                                    print("Add new folder")
+                                }) {
+                                    Image(systemName: "plus.square.fill")
+                                        .resizable()
+                                        .frame(width: 28, height: 28)
+                                        .foregroundColor(Color(hex: "7B83EB"))
+                                }
+                            }
+                            .padding(.horizontal)
+                            .padding(.bottom, 30.0)
                         }
                     }
-                    .padding(.horizontal)
-                    .navigationBarBackButtonHidden(true)
 
+                    ScrollView {
+                        LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 3), spacing: 20) {
+                            ForEach(folders, id: \.self) { folder in
+                                NavigationLink(destination: FolderView(folderName: folder), tag: folder, selection: $selectedFolder) {
+                                    Button(action: {
+                                        selectedFolder = folder
+                                    }) {
+                                        VStack {
+                                            Image(systemName: "folder")
+                                                .resizable()
+                                                .frame(width: 60, height: 50)
+                                                .foregroundColor(Color(hex: "7B83EB"))
+                                            Text(folder)
+                                                .font(.caption)
+                                                .fontWeight(.semibold)
+                                                .foregroundColor(.black)
+                                        }
+                                        .frame(maxWidth: .infinity)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                }
+                            }
+                        }
+                        .padding(.horizontal)
+                        .navigationBarBackButtonHidden(true)
+                    }
                 }
-                .frame(maxWidth: .infinity)
+                .background(Color(hex: "E8EBFA").edgesIgnoringSafeArea(.all))
 
+                // Profile popup
+                if isProfilePopupVisible {
+                    Color.black.opacity(0.3) // Dimmed background
+                        .edgesIgnoringSafeArea(.all)
+                        .onTapGesture {
+                            withAnimation {
+                                isProfilePopupVisible = false
+                            }
+                        }
+                    
+                    ProfilePopupView(isVisible: $isProfilePopupVisible)
+                        .transition(.scale) 
+                        .zIndex(1) 
+                }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-            .background(Color(hex: "E8EBFA").edgesIgnoringSafeArea(.all))
         }
         .navigationBarBackButtonHidden(true)
-        .sheet(isPresented: $isProfilePopupVisible) {
-            ProfilePopupView()
-        }
-
-
     }
-
 }
-
 
 extension View {
     func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
@@ -127,4 +127,3 @@ struct RoundedCorner: Shape {
 #Preview {
     HomePageView()
 }
-
