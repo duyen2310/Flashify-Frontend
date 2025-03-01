@@ -140,24 +140,43 @@ struct FolderView: View {
                     .onTapGesture {
                         showCreatePopup = false
                     }
-                
-                CreateFlashcardView()
-                    .frame(width: 350, height: 450)
-                    .background(Color.white)
-                    .cornerRadius(20)
-                    .shadow(radius: 10)
-                    .overlay(
-                        Button(action: {
-                            showCreatePopup = false
-                        }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.title)
-                                .foregroundColor(.gray)
-                        }
-                        .padding()
-                        .offset(x: 150, y: -200)
-                    )
-                    .transition(.scale)
+                if selectedTab == "Flashcards" {
+                    CreateFlashcardView()
+                        .frame(width: 350, height: 450)
+                        .background(Color.white)
+                        .cornerRadius(20)
+                        .shadow(radius: 10)
+                        .overlay(
+                            Button(action: {
+                                showCreatePopup = false
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.title)
+                                    .foregroundColor(.gray)
+                            }
+                                .padding()
+                                .offset(x: 150, y: -200)
+                        )
+                        .transition(.scale)
+                }else{
+                    CreateNoteView()
+                        .frame(width: 350, height: 450)
+                        .background(Color.white)
+                        .cornerRadius(20)
+                        .shadow(radius: 10)
+                        .overlay(
+                            Button(action: {
+                                showCreatePopup = false
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.title)
+                                    .foregroundColor(.gray)
+                            }
+                                .padding()
+                                .offset(x: 150, y: -200)
+                        )
+                        .transition(.scale)
+                }
             }
         }
     }
