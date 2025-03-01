@@ -36,8 +36,7 @@ struct FolderView: View {
                     Spacer()
                     
                     Text(folderName)
-                        .font(.title)
-                        .fontWeight(.bold)
+                        .font(Font.custom("Teko-Bold", size: 36))
                         .foregroundColor(.white)
                     
                     Spacer()
@@ -84,8 +83,7 @@ struct FolderView: View {
                         LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 2), spacing: 16) {
                             ForEach(flashcards, id: \.self) { flashcard in
                                 Text(flashcard)
-                                    .font(.body)
-                                    .fontWeight(.medium)
+                                    .font(Font.custom("Teko-Bold", size: 36))
                                     .foregroundColor(.white)
                                     .padding()
                                     .frame(height: 120)
@@ -100,8 +98,7 @@ struct FolderView: View {
                         VStack(spacing: 12) {
                             ForEach(chapters, id: \.self) { chapter in
                                 Text(chapter)
-                                    .font(.body)
-                                    .fontWeight(.bold)
+                                    .font(Font.custom("Teko-Bold", size: 36))
                                     .foregroundColor(.white)
                                     .padding()
                                     .frame(maxWidth: .infinity)
@@ -113,6 +110,7 @@ struct FolderView: View {
                     }
                 }
                 
+            VStack{
                 Spacer()
                 
                 Button(action: {
@@ -125,15 +123,16 @@ struct FolderView: View {
                         .clipShape(Circle())
                         .shadow(radius: 4)
                 }
-                .padding(.bottom, 20)
-                .padding(.trailing, 20)
                 .sheet(isPresented: $showChatify) {
                     ChatifyView()
                 }
+                .padding(.bottom, 30)
             }
-            .edgesIgnoringSafeArea(.top)
-            .background(Color(hex: "E8EBFA").edgesIgnoringSafeArea(.all))
-            .navigationBarBackButtonHidden(true)
+            .frame(maxWidth: .infinity, maxHeight: .zero, alignment: .bottom)
+        }
+        .edgesIgnoringSafeArea(.top)
+        .background(Color(hex: "E8EBFA").edgesIgnoringSafeArea(.all))
+        .navigationBarBackButtonHidden(true)
 
             if showCreatePopup {
                 Color.black.opacity(0.3)

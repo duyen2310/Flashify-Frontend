@@ -18,8 +18,7 @@ struct ChatifyView: View {
         VStack {
             HStack {
                 Text("Chatify")
-                    .font(.title)
-                    .fontWeight(.bold)
+                    .font(Font.custom("Teko-Bold", size: 36))
                     .foregroundColor(Color(hex: "4D4D9A"))
                 Spacer()
                 Button(action: { dismiss() }) {
