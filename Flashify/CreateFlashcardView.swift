@@ -94,7 +94,8 @@ struct CreateFlashcardView: View {
                                     .foregroundColor(.blue)
                                     .padding(.top)
                             }
-                        }
+                    }
+                    .padding(.vertical, 30.0)
                     }
 
                 HStack {
