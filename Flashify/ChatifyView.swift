@@ -58,7 +58,7 @@ struct ChatifyView: View {
                     }
                 }) {
                     Image(systemName: "paperplane.fill")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.black)
                         .font(.title2)
                 }
             }
