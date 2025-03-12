@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		D284BD9D2D814E0600C0E905 /* KeychainSwift in Frameworks */ = {isa = PBXBuildFile; productRef = D284BD9C2D814E0600C0E905 /* KeychainSwift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		D20256412D724EC900E27255 /* Flashify.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Flashify.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -36,6 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D284BD9D2D814E0600C0E905 /* KeychainSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +83,7 @@
 			);
 			name = Flashify;
 			packageProductDependencies = (
+				D284BD9C2D814E0600C0E905 /* KeychainSwift */,
 			);
 			productName = Flashify;
 			productReference = D20256412D724EC900E27255 /* Flashify.app */;
@@ -107,6 +113,9 @@
 			);
 			mainGroup = D20256382D724EC800E27255;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D284BD9B2D814E0600C0E905 /* XCRemoteSwiftPackageReference "keychain-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = D20256422D724EC900E27255 /* Products */;
 			projectDirPath = "";
@@ -337,6 +346,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D284BD9B2D814E0600C0E905 /* XCRemoteSwiftPackageReference "keychain-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/evgenyneu/keychain-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 24.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D284BD9C2D814E0600C0E905 /* KeychainSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D284BD9B2D814E0600C0E905 /* XCRemoteSwiftPackageReference "keychain-swift" */;
+			productName = KeychainSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D20256392D724EC800E27255 /* Project object */;
 }

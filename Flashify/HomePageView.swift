@@ -1,9 +1,9 @@
 import SwiftUI
-
 struct HomePageView: View {
     @State private var selectedFolder: String? = nil
     @State private var isProfilePopupVisible = false
     @State private var isNewFolderVisible = false
+    @ObservedObject var sessionManager = SessionManager.shared
 
     let folders = ["Mathematics", "Literature", "Biology", "Grammar", "History", "DSA"]
 
@@ -57,6 +57,7 @@ struct HomePageView: View {
                                         .foregroundColor(Color(hex: "7B83EB"))
                                 }
                             }
+                            
                             .padding(.horizontal)
                             .padding(.bottom, 30.0)
                         }
@@ -64,7 +65,7 @@ struct HomePageView: View {
 
                     ScrollView {
                         LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 3), spacing: 20) {
-                            ForEach(folders, id: \ .self) { folder in
+                            ForEach(folders, id: \.self) { folder in
                                 NavigationLink(destination: FolderView(folderName: folder), tag: folder, selection: $selectedFolder) {
                                     Button(action: {
                                         selectedFolder = folder
@@ -88,8 +89,10 @@ struct HomePageView: View {
                     }
                 }
                 .background(Color(hex: "E8EBFA").edgesIgnoringSafeArea(.all))
+                .onAppear {
+                    print("Session Manager Access Token: \(sessionManager.accessToken ?? "No Token")")
+                }
 
-                // Profile popup
                 if isProfilePopupVisible {
                     Color.black.opacity(0.3)
                         .edgesIgnoringSafeArea(.all)
@@ -111,17 +114,17 @@ struct HomePageView: View {
                                 isNewFolderVisible = false
                             }
                         }
-
+                    
                     CreateNewFolderView(isVisible: $isNewFolderVisible)
                         .transition(.scale)
                         .zIndex(1)
-                
                 }
             }
         }
         .navigationBarBackButtonHidden(true)
     }
 }
+
 
 extension View {
     func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
@@ -138,6 +141,8 @@ struct RoundedCorner: Shape {
         return Path(path.cgPath)
     }
 }
+
+
 
 #Preview {
     HomePageView()

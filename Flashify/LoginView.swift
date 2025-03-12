@@ -5,7 +5,8 @@ struct LoginView: View {
     @State private var password = ""
     @State private var isNavigatingToSignUp = false
     @State private var isNavigatingToHomePage = false
-
+    @State private var isLoading = false
+    @State private var errorMessage: String?
 
     var body: some View {
         NavigationStack {
@@ -23,7 +24,7 @@ struct LoginView: View {
                     
                     VStack(spacing: 25) {
                         TextField("Email", text: $email)
-                            .padding(.all)
+                            .padding()
                             .frame(width: 250, height: 50)
                             .background(Color.white)
                             .overlay(
@@ -32,32 +33,40 @@ struct LoginView: View {
                             )
 
                         SecureField("Password", text: $password)
-                            .padding(.all)
+                            .padding()
                             .frame(width: 250, height: 50)
                             .background(Color.white)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
                                     .stroke(Color(hex: "E1E1E1"), lineWidth: 3)
                             )
-
                     }
                     .padding(.top)
                     
-                    Button(action: {
-                        isNavigatingToHomePage = true
-                    }) {
-                        Text("Sign In")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .frame(width: 250.0)
-                            .background(Color(hex: "7B83EB"))
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
+                    if let errorMessage = errorMessage {
+                        Text(errorMessage)
+                            .foregroundColor(.red)
+                            .font(.footnote)
+                            .padding(.top)
                     }
+
+                    Button(action: loginUser) {
+                        if isLoading {
+                            ProgressView()
+                        } else {
+                            Text("Sign In")
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .frame(width: 250.0)
+                                .background(Color(hex: "7B83EB"))
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                        }
+                    }
+                    .disabled(isLoading)
                     .padding([.top, .leading, .trailing])
                     .frame(width: 220.0)
                     
-                    // Sign up link
                     HStack {
                         Text("Don't have an account?")
                             .foregroundColor(.gray)
@@ -76,10 +85,9 @@ struct LoginView: View {
                         SignUpView()
                     }
                     .navigationDestination(isPresented: $isNavigatingToHomePage) {
-                        HomePageView()
+                        HomePageView() // No need to pass accessToken manually anymore
                     }
                 }
-//                .padding()
                 .frame(maxWidth: 350)
                 .background(Color.white)
                 .cornerRadius(16)
@@ -87,7 +95,27 @@ struct LoginView: View {
             }
         }
     }
+
+    // MARK: - Login Logic
+    func loginUser() {
+        isLoading = true
+        errorMessage = nil
+
+        UserNetworkManager.shared.login(email: email, password: password) { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                switch result {
+                case .success(let token):
+                    SessionManager.shared.accessToken = token  // Update global state
+                    isNavigatingToHomePage = true
+                case .failure(let error):
+                    errorMessage = error.localizedDescription
+                }
+            }
+        }
+    }
 }
+
 
 #Preview {
     LoginView()
