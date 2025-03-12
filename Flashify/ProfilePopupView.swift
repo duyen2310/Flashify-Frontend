@@ -7,7 +7,9 @@
 
 import SwiftUI
 struct ProfilePopupView: View {
+    @Environment(\.dismiss) var dismiss
     @Binding var isVisible: Bool
+    @State private var isNavigatingToLogIn = false
 
     var body: some View {
         VStack {
@@ -29,16 +31,35 @@ struct ProfilePopupView: View {
                 .cornerRadius(10)
                 .disabled(true)
 
-            Button("Close") {
-                withAnimation {
-                    isVisible = false
+            HStack {
+                Button(action: {
+                    withAnimation{
+                        isVisible = false
+                    }
+                }) {
+                    Text("Cancel")
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color(hex: "7B83EB"))
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                }
+                
+                Button(action: {
+                    isNavigatingToLogIn = true
+                }) {
+                    Text("Logout")
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color(hex: "EB7B7D"))
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
                 }
             }
-            .padding()
-            .foregroundColor(.white)
-            .background(Color(hex: "7B83EB"))
-            .cornerRadius(10)
-
+            .navigationDestination(isPresented: $isNavigatingToLogIn) {
+                LoginView()
+            }
+            .padding(.horizontal)
             Spacer()
         }
         .padding()
