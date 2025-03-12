@@ -85,13 +85,15 @@ struct LoginView: View {
                         SignUpView()
                     }
                     .navigationDestination(isPresented: $isNavigatingToHomePage) {
-                        HomePageView() // No need to pass accessToken manually anymore
+                        HomePageView() 
                     }
                 }
                 .frame(maxWidth: 350)
                 .background(Color.white)
                 .cornerRadius(16)
                 .shadow(radius: 10)
+                .navigationBarBackButtonHidden(true)
+
             }
         }
     }

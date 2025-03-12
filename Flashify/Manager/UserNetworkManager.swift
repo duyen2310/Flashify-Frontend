@@ -11,7 +11,7 @@ import KeychainSwift
 class UserNetworkManager {
     static let shared = UserNetworkManager()
     
-    private let baseUrl = "http://127.0.0.1:5000/user" // Replace with your backend URL
+    private let baseUrl = "http://127.0.0.1:5000/user"
     private let keychain = KeychainSwift()
     
     func login(email: String, password: String, completion: @escaping (Result<String, Error>) -> Void) {
@@ -56,8 +56,8 @@ class UserNetworkManager {
                 if let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
                    let accessToken = jsonResponse["accessToken"] as? String {
                     
-                    self.keychain.set(accessToken, forKey: "accessToken") // Store token securely
-                    completion(.success(accessToken)) // Return the access token
+                    self.keychain.set(accessToken, forKey: "accessToken")
+                    completion(.success(accessToken))
                 } else {
                     completion(.failure(NetworkError.invalidResponse))
                 }
@@ -144,7 +144,7 @@ class UserNetworkManager {
         ]
         
         guard let httpBody = try? JSONSerialization.data(withJSONObject: body) else {
-            completion(.failure(NetworkError.invalidRequestBody))  // Handle invalid body serialization
+            completion(.failure(NetworkError.invalidRequestBody))
             return
         }
         
@@ -152,18 +152,17 @@ class UserNetworkManager {
         
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
-                print("Error: \(error)")  // Print error
-                completion(.failure(error))  // Return error
+                print("Error: \(error)")
+                completion(.failure(error))
                 return
             }
             
             guard let data = data else {
-                print("No data received")  // Print error if no data
-                completion(.failure(NetworkError.noData))  // Handle missing data
+                print("No data received")
+                completion(.failure(NetworkError.noData))
                 return
             }
             
-            // Handle the HTTP response status code
             if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
                 print("HTTP Error: \(httpResponse.statusCode)")  // Print HTTP error
                 completion(.failure(NetworkError.httpError(statusCode: httpResponse.statusCode)))  // Handle HTTP errors
@@ -173,13 +172,13 @@ class UserNetworkManager {
             do {
                 if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
                    let token = json["accessToken"] as? String {
-                    completion(.success(token))  // Return token on success
+                    completion(.success(token))
                 } else {
-                    print("Invalid response format")  // Print error if response format is invalid
-                    completion(.failure(NetworkError.invalidResponse))  // Handle invalid response
+                    print("Invalid response format")
+                    completion(.failure(NetworkError.invalidResponse))
                 }
             } catch {
-                print("Error parsing JSON: \(error)")  // Print error if JSON parsing fails
+                print("Error parsing JSON: \(error)")
                 completion(.failure(error))  // Return error
             }
         }.resume()

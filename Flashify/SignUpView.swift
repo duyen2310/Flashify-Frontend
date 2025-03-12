@@ -105,8 +105,8 @@ struct SignUpView: View {
             DispatchQueue.main.async {
                 isLoading = false
                 switch result {
-                case .success(let token):  // Ensure the API returns the token
-                    SessionManager.shared.accessToken = token  // Store token in SessionManager
+                case .success(let token):
+                    SessionManager.shared.accessToken = token  
                     isNavigatingToHomePage = true
                 case .failure(let error):
                     errorMessage = error.localizedDescription

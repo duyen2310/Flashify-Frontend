@@ -1,15 +1,14 @@
-//
-//  ProfilePopupView.swift
-//  Flashify
-//
-//  Created by Ky Duyen on 1/3/25.
-//
-
 import SwiftUI
+
 struct ProfilePopupView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var isVisible: Bool
     @State private var isNavigatingToLogIn = false
+    @ObservedObject var sessionManager = SessionManager.shared
+    @State private var username: String = ""
+    @State private var email: String = ""
+    @State private var isLoading = true
+    @State private var errorMessage: String?
 
     var body: some View {
         VStack {
@@ -19,21 +18,36 @@ struct ProfilePopupView: View {
                 .foregroundColor(Color(hex: "4D4D9A"))
                 .padding()
 
-            TextField("Username: John Doe", text: .constant(""))
-                .padding()
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(10)
-                .disabled(true)
+          
+            if isLoading {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle())
+                    .padding()
+            } else {
+                
+                TextField("Username: \(username)", text: .constant(username))
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(10)
+                    .disabled(true)
 
-            TextField("Email: johndoe@gmail.com", text: .constant(""))
-                .padding()
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(10)
-                .disabled(true)
+                TextField("Email: \(email)", text: .constant(email))
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(10)
+                    .disabled(true)
+
+                // Show error message if there is any
+                if let errorMessage = errorMessage {
+                    Text(errorMessage)
+                        .foregroundColor(.red)
+                        .font(.footnote)
+                }
+            }
 
             HStack {
                 Button(action: {
-                    withAnimation{
+                    withAnimation {
                         isVisible = false
                     }
                 }) {
@@ -46,7 +60,7 @@ struct ProfilePopupView: View {
                 }
                 
                 Button(action: {
-                    isNavigatingToLogIn = true
+                    logoutUser()
                 }) {
                     Text("Logout")
                         .padding()
@@ -60,6 +74,7 @@ struct ProfilePopupView: View {
                 LoginView()
             }
             .padding(.horizontal)
+
             Spacer()
         }
         .padding()
@@ -67,5 +82,49 @@ struct ProfilePopupView: View {
         .background(Color.white)
         .cornerRadius(20)
         .shadow(radius: 10)
+        .onAppear {
+            fetchUserProfile()
+        }
     }
+
+    func fetchUserProfile() {
+        // Start loading
+        isLoading = true
+        errorMessage = nil
+        
+        UserNetworkManager.shared.fetchUserProfile { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                switch result {
+                case .success(let response):
+                    
+                    if let user = response["user"] as? [String: Any] {
+                        if let username = user["username"] as? String,
+                           let email = user["email"] as? String {
+                            self.username = username
+                            self.email = email
+                        }
+                    } else {
+                        errorMessage = "Invalid response structure."
+                    }
+                case .failure(let error):
+                    errorMessage = "Failed to load profile: \(error.localizedDescription)"
+                }
+            }
+        }
+    }
+
+    
+
+    // Logout logic
+    func logoutUser() {
+        sessionManager.logout()
+        withAnimation {
+            isNavigatingToLogIn = true
+        }
+    }
+}
+
+#Preview {
+    ProfilePopupView(isVisible: .constant(true))
 }
