@@ -1,11 +1,13 @@
 import SwiftUI
+
 struct HomePageView: View {
     @State private var selectedFolder: String? = nil
     @State private var isProfilePopupVisible = false
     @State private var isNewFolderVisible = false
     @ObservedObject var sessionManager = SessionManager.shared
-
-    let folders = ["Mathematics", "Literature", "Biology", "Grammar", "History", "DSA"]
+    @State private var folders: [String] = []  // Array to hold fetched folder names
+    @State private var isLoading: Bool = false
+    @State private var errorMessage: String? = nil
 
     var body: some View {
         NavigationView {
@@ -47,8 +49,7 @@ struct HomePageView: View {
                                     .cornerRadius(10)
                                 Button(action: {
                                     withAnimation {
-                                        isNewFolderVisible
-                                            .toggle()
+                                        isNewFolderVisible.toggle()
                                     }
                                 }) {
                                     Image(systemName: "plus.square.fill")
@@ -57,10 +58,21 @@ struct HomePageView: View {
                                         .foregroundColor(Color(hex: "7B83EB"))
                                 }
                             }
-                            
                             .padding(.horizontal)
                             .padding(.bottom, 30.0)
                         }
+                    }
+
+                    if isLoading {
+                        ProgressView("Loading Folders...")
+                            .progressViewStyle(CircularProgressViewStyle())
+                    }
+
+                    if let errorMessage = errorMessage {
+                        Text(errorMessage)
+                            .foregroundColor(.red)
+                            .font(.caption)
+                            .padding()
                     }
 
                     ScrollView {
@@ -75,7 +87,7 @@ struct HomePageView: View {
                                                 .resizable()
                                                 .frame(width: 60, height: 50)
                                                 .foregroundColor(Color(hex: "7B83EB"))
-                                            Text(folder)
+                                            Text(folder)  // Use folder name directly
                                                 .font(Font.custom("Teko-Bold", size: 16))
                                                 .foregroundColor(Color(hex: "4D4D9A"))
                                         }
@@ -90,9 +102,11 @@ struct HomePageView: View {
                 }
                 .background(Color(hex: "E8EBFA").edgesIgnoringSafeArea(.all))
                 .onAppear {
-                    print("Session Manager Access Token: \(sessionManager.accessToken ?? "No Token")")
+                    fetchFolders()
                 }
-
+                .onAppear {
+                print("Session Manager Access Token: \(sessionManager.accessToken ?? "No Token")")
+            }
                 if isProfilePopupVisible {
                     Color.black.opacity(0.3)
                         .edgesIgnoringSafeArea(.all)
@@ -106,7 +120,8 @@ struct HomePageView: View {
                         .transition(.scale)
                         .zIndex(1)
                 }
-                if isNewFolderVisible{
+
+                if isNewFolderVisible {
                     Color.black.opacity(0.3)
                         .edgesIgnoringSafeArea(.all)
                         .onTapGesture {
@@ -114,15 +129,45 @@ struct HomePageView: View {
                                 isNewFolderVisible = false
                             }
                         }
-                    
-                    CreateNewFolderView(isVisible: $isNewFolderVisible)
-                        .transition(.scale)
-                        .zIndex(1)
+
+                    CreateNewFolderView(isVisible: $isNewFolderVisible, onFolderCreated: {
+                           fetchFolders()
+                           isNewFolderVisible = false
+                       })
+                       .transition(.scale)
+                       .zIndex(1)
                 }
             }
         }
         .navigationBarBackButtonHidden(true)
     }
+    
+   
+
+    // Fetch folders from the backend
+    private func fetchFolders() {
+        isLoading = true
+        errorMessage = nil
+
+        FolderNetworkManager.shared.getFolders { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                switch result {
+                case .success(let response):
+                    // Check if the response contains the "folders" array
+                    if let foldersData = response["folders"] as? [[String: Any]] {
+                        // Extract folder names from the dictionaries in the "folders" array
+                        self.folders = foldersData.compactMap { folderData in
+                            return folderData["name"] as? String
+                        }
+                    }
+                case .failure(let error):
+                    errorMessage = error.localizedDescription
+                }
+            }
+        }
+    }
+
 }
 
 
@@ -141,8 +186,6 @@ struct RoundedCorner: Shape {
         return Path(path.cgPath)
     }
 }
-
-
 
 #Preview {
     HomePageView()
