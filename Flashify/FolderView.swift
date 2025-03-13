@@ -2,6 +2,9 @@ import SwiftUI
 
 struct FolderView: View {
     var folderName: String
+    var folderId: String
+    @State private var isLoading: Bool = false
+    @State private var errorMessage: String? = nil
     @State private var showChatify: Bool = false
     @State private var showFlashcard: Bool = false
     @State private var showChapter: Bool = false
@@ -9,21 +12,9 @@ struct FolderView: View {
     @State private var selectedTab: String = "Flashcards"
     @Environment(\.dismiss) var dismiss
     @ObservedObject var sessionManager = SessionManager.shared
-    let flashcards = [
-        "In what way does calculus contribute to the field of engineering?",
-        "How does calculus contribute to advancement in computer science?",
-        "What is the integral of f(x)=3x²?",
-        "What is the derivative of f(x)=x²?",
-        "What is the limit definition of a derivative?"
-    ]
     
-    let chapters = [
-        "Chapter : 1",
-        "Chapter : 2",
-        "Chapter : 3",
-        "Chapter : 4",
-        "Chapter : 5"
-    ]
+    @State private var flashcards: [(id: String, folderId: String, question: String, answer: String)] = []
+    @State private var notes: [(id: String, folderId: String, note: String, title: String)] = [] // Store fetched notes
     
     var body: some View {
         ZStack {
@@ -82,47 +73,66 @@ struct FolderView: View {
                 
                 ScrollView {
                     if selectedTab == "Flashcards" {
-                        LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 2), spacing: 16) {
-                            ForEach(flashcards, id: \.self) { flashcard in
-                                Button(action: {
-                                    showFlashcard = true
-                                })
-                                {
-                                    Text(flashcard)
-                                        .font(Font.custom("Teko-Bold", size: 16))
-                                        .foregroundColor(.white)
-                                        .padding()
+                        if flashcards.isEmpty {
+                            Text("No flashcards available.")
+                                .foregroundColor(.gray)
+                                .padding()
+                        } else {
+                            LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 2), spacing: 16) {
+                                ForEach(flashcards, id: \.id) { flashcard in
+                                    Button(action: {
+                                        showFlashcard = true
+                                    }) {
+                                        VStack {
+                                            Text(flashcard.question)
+                                                .font(Font.custom("Teko-Bold", size: 16))
+                                                .foregroundColor(.white)
+                                                .padding()
+                                            
+                                            Text(flashcard.answer)
+                                                .font(Font.custom("Teko-Regular", size: 14))
+                                                .foregroundColor(.gray)
+                                                .padding(.bottom)
+                                        }
                                         .frame(height: 120)
                                         .frame(maxWidth: .infinity)
                                         .background(LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color(hex: "4D4D9A")]), startPoint: .topLeading, endPoint: .bottomTrailing))
                                         .cornerRadius(12)
-                                }
+                                    }
                                     .multilineTextAlignment(.center)
-                            }
-                        }
-                        .padding()
-                    } else {
-                        VStack(spacing: 12) {
-                            ForEach(chapters, id: \.self) { chapter in
-                                Button(action: {
-                                    showChapter = true
-                                }) {
-                                    Text(chapter)
-                                        .font(Font.custom("Teko-Bold", size: 26))
-                                        .foregroundColor(.white)
-                                        .padding()
-                                        .frame(maxWidth: .infinity)
-                                        .background(LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color(hex: "4D4D9A")]), startPoint: .topLeading, endPoint: .bottomTrailing))
-                                        .cornerRadius(12)
                                 }
-                                .buttonStyle(PlainButtonStyle())
                             }
+                            .padding()
                         }
-                        .padding()
+                    } else {
+                        if notes.isEmpty {
+                            Text("No notes available.")
+                                .foregroundColor(.gray)
+                                .padding()
+                        } else {
+                            VStack(spacing: 12) {
+                                ForEach(notes, id: \.id) { note in
+                                    Button(action: {
+                                        showChapter = true
+                                    }) {
+                                        VStack {
+                                            Text(note.title)  // Display note title instead of the entire note
+                                                .font(Font.custom("Teko-Bold", size: 26))
+                                                .foregroundColor(.white)
+                                                .padding()
+                                                .frame(maxWidth: .infinity)
+                                                .background(LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color(hex: "4D4D9A")]), startPoint: .topLeading, endPoint: .bottomTrailing))
+                                                .cornerRadius(12)
+                                        }
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                }
+                            }
+                            .padding()
+                        }
                     }
                 }
                 
-            VStack{
                 Spacer()
                 
                 Button(action: {
@@ -140,89 +150,70 @@ struct FolderView: View {
                 }
                 .padding(.bottom, 30)
             }
-            .frame(maxWidth: .infinity, maxHeight: .zero, alignment: .bottom)
+            .edgesIgnoringSafeArea(.top)
+            .background(Color(hex: "E8EBFA").edgesIgnoringSafeArea(.all))
+            .navigationBarBackButtonHidden(true)
+            .onAppear {
+                fetchFlashcards()
+                fetchNotes()
+            }
         }
-        .edgesIgnoringSafeArea(.top)
-        .background(Color(hex: "E8EBFA").edgesIgnoringSafeArea(.all))
-        .navigationBarBackButtonHidden(true)
-            
-            if showChapter {
-                Color.black.opacity(0.3)
-                    .edgesIgnoringSafeArea(.all)
-                    .onTapGesture {
-                        showChapter = false
-                    }
-                ChapterNoteView(isVisible: $showChapter)
-                    .frame(width: 380, height: 750)
-                    .background(Color.white)
-                    .cornerRadius(20)
-                    .shadow(radius: 10)
-                    .transition(.scale)
-            }
-            
-            if showFlashcard {
-                Color.black.opacity(0.3)
-                    .edgesIgnoringSafeArea(.all)
-                    .onTapGesture {
-                        showFlashcard = false
-                    }
-                FlashcardView(isVisible: $showFlashcard)
-                    .frame(width: 350, height: 300)
-                    .background(Color.white)
-                    .cornerRadius(20)
-                    .shadow(radius: 10)
-                    .transition(.scale)
-            
-            }
-            
-            if showCreatePopup {
-                Color.black.opacity(0.3)
-                    .edgesIgnoringSafeArea(.all)
-                    .onTapGesture {
-                        showCreatePopup = false
-                    }
-                if selectedTab == "Flashcards" {
-                    CreateFlashcardView()
-                        .frame(width: 350, height: 450)
-                        .background(Color.white)
-                        .cornerRadius(20)
-                        .shadow(radius: 10)
-                        .overlay(
-                            Button(action: {
-                                showCreatePopup = false
-                            }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .font(.title)
-                                    .foregroundColor(.gray)
+    }
+    
+    private func fetchFlashcards() {
+        isLoading = true
+        errorMessage = nil
+        
+        FlashcardNetworkManager.shared.getFlashcards(for: Int(folderId) ?? 0) { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                switch result {
+                case .success(let response):
+                    if let responseDict = response as? [String: Any], let flashcardsData = responseDict["flashcards"] as? [[String: Any]] {
+                        self.flashcards = flashcardsData.compactMap { flashcardData in
+                            if let id = flashcardData["id"] as? Int,
+                               let folderId = flashcardData["folder_id"] as? Int,
+                               let question = flashcardData["question"] as? String,
+                               let answer = flashcardData["answer"] as? String {
+                                return (id: "\(id)", folderId: "\(folderId)", question: question, answer: answer)
                             }
-                                .padding()
-                                .offset(x: 150, y: -200)
-                        )
-                        .transition(.scale)
-                }else{
-                    CreateNoteView()
-                        .frame(width: 350, height: 450)
-                        .background(Color.white)
-                        .cornerRadius(20)
-                        .shadow(radius: 10)
-                        .overlay(
-                            Button(action: {
-                                showCreatePopup = false
-                            }) {
-                                Image(systemName: "xmark.circle.fill")
-                                    .font(.title)
-                                    .foregroundColor(.gray)
-                            }
-                                .padding()
-                                .offset(x: 150, y: -200)
-                        )
-                        .transition(.scale)
+                            return nil
+                        }
+                        print("Fetched flashcards: \(self.flashcards)")  // Debugging the fetched flashcards
+                    }
+                case .failure(let error):
+                    errorMessage = error.localizedDescription
                 }
             }
         }
     }
-}
-
-#Preview {
-    FolderView(folderName: "Calculus")
+    
+    private func fetchNotes() {
+        isLoading = true
+        errorMessage = nil
+        
+        NoteNetworkManager.shared.getNotes(for: Int(folderId) ?? 0) { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                switch result {
+                case .success(let response):
+                    if let responseDict = response as? [String: Any], let notesData = responseDict["notes"] as? [[String: Any]] {
+                        self.notes = notesData.compactMap { noteData in
+                            // Change id and folder_id to Int, as the response shows them as integers
+                            if let id = noteData["id"] as? Int,
+                               let folderId = noteData["folder_id"] as? Int,
+                               let note = noteData["note"] as? String,
+                               let title = noteData["title"] as? String {
+                                return (id: "\(id)", folderId: "\(folderId)", note: note, title: title)
+                            }
+                            return nil
+                        }
+                        print("Fetched notes: \(self.notes)")  // Debugging the fetched notes
+                    }
+                case .failure(let error):
+                    errorMessage = error.localizedDescription
+                }
+            }
+        }
+    }
 }

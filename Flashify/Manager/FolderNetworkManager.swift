@@ -34,14 +34,13 @@ class FolderNetworkManager {
                 return
             }
             
-//            if let responseString = String(data: data, encoding: .utf8) {
-//                print("Response: \(responseString)")
-//            }
-//            
+
+
             do {
                 // Try to decode the response into a dictionary
                 if let jsonResponse = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                     completion(.success(jsonResponse))
+//                    print(jsonResponse)
                 } else {
                     completion(.failure(NSError(domain: "Invalid data format", code: 1, userInfo: nil)))
                 }
@@ -79,7 +78,6 @@ class FolderNetworkManager {
             "description": description
         ]
         
-        print("Request body: \(body)")
         
         do {
             let jsonData = try JSONSerialization.data(withJSONObject: body, options: [])
@@ -108,9 +106,7 @@ class FolderNetworkManager {
             print("Response status code: \(response.statusCode)")
             
             if response.statusCode == 201 {
-                if let responseData = data {
-                    print("Response data: \(String(describing: String(data: responseData, encoding: .utf8)))")
-                }
+                
                 completion(.success("Folder created successfully"))
             } else {
                 let errorMessage = String(data: data ?? Data(), encoding: .utf8) ?? "Unknown error"

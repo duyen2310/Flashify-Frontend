@@ -5,7 +5,7 @@ struct HomePageView: View {
     @State private var isProfilePopupVisible = false
     @State private var isNewFolderVisible = false
     @ObservedObject var sessionManager = SessionManager.shared
-    @State private var folders: [String] = []  // Array to hold fetched folder names
+    @State private var folders: [(id: String, name: String)] = []  // Store both folderId and folderName
     @State private var isLoading: Bool = false
     @State private var errorMessage: String? = nil
 
@@ -13,56 +13,8 @@ struct HomePageView: View {
         NavigationView {
             ZStack {
                 VStack {
-                    ZStack {
-                        LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color(hex: "4D4D9A")]),
-                                       startPoint: .top,
-                                       endPoint: .bottom)
-                            .frame(height: 190)
-                            .clipShape(RoundedCorner(radius: 30, corners: [.bottomLeft, .bottomRight]))
-                            .edgesIgnoringSafeArea(.all)
-                            .shadow(radius: 5)
-
-                        VStack(spacing: 10) {
-                            HStack {
-                                Text("Flashify")
-                                    .font(Font.custom("Teko-Bold", size: 36))
-                                    .foregroundColor(.white)
-                                Spacer()
-                                Button(action: {
-                                    withAnimation {
-                                        isProfilePopupVisible.toggle()
-                                    }
-                                }) {
-                                    Image(systemName: "person.crop.circle")
-                                        .resizable()
-                                        .frame(width: 28, height: 28)
-                                        .foregroundColor(.white)
-                                }
-                            }
-                            .padding(.horizontal)
-                            .padding(.top, -50.0)
-
-                            HStack {
-                                TextField("Search folders", text: .constant(""))
-                                    .padding(10)
-                                    .background(Color.white)
-                                    .cornerRadius(10)
-                                Button(action: {
-                                    withAnimation {
-                                        isNewFolderVisible.toggle()
-                                    }
-                                }) {
-                                    Image(systemName: "plus.square.fill")
-                                        .resizable()
-                                        .frame(width: 28, height: 28)
-                                        .foregroundColor(Color(hex: "7B83EB"))
-                                }
-                            }
-                            .padding(.horizontal)
-                            .padding(.bottom, 30.0)
-                        }
-                    }
-
+                    HeaderView(isProfilePopupVisible: $isProfilePopupVisible, isNewFolderVisible: $isNewFolderVisible)
+                    
                     if isLoading {
                         ProgressView("Loading Folders...")
                             .progressViewStyle(CircularProgressViewStyle())
@@ -75,76 +27,32 @@ struct HomePageView: View {
                             .padding()
                     }
 
-                    ScrollView {
-                        LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 3), spacing: 20) {
-                            ForEach(folders, id: \.self) { folder in
-                                NavigationLink(destination: FolderView(folderName: folder), tag: folder, selection: $selectedFolder) {
-                                    Button(action: {
-                                        selectedFolder = folder
-                                    }) {
-                                        VStack {
-                                            Image(systemName: "folder")
-                                                .resizable()
-                                                .frame(width: 60, height: 50)
-                                                .foregroundColor(Color(hex: "7B83EB"))
-                                            Text(folder)  // Use folder name directly
-                                                .font(Font.custom("Teko-Bold", size: 16))
-                                                .foregroundColor(Color(hex: "4D4D9A"))
-                                        }
-                                        .frame(maxWidth: .infinity)
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
-                                }
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
+                    FolderListView(folders: $folders, selectedFolder: $selectedFolder)
                 }
                 .background(Color(hex: "E8EBFA").edgesIgnoringSafeArea(.all))
                 .onAppear {
                     fetchFolders()
                 }
-                .onAppear {
-                print("Session Manager Access Token: \(sessionManager.accessToken ?? "No Token")")
-            }
+                
                 if isProfilePopupVisible {
-                    Color.black.opacity(0.3)
-                        .edgesIgnoringSafeArea(.all)
-                        .onTapGesture {
-                            withAnimation {
-                                isProfilePopupVisible = false
-                            }
-                        }
-
-                    ProfilePopupView(isVisible: $isProfilePopupVisible)
-                        .transition(.scale)
-                        .zIndex(1)
+                    OverlayView(isVisible: $isProfilePopupVisible) {
+                        ProfilePopupView(isVisible: $isProfilePopupVisible)
+                    }
                 }
 
                 if isNewFolderVisible {
-                    Color.black.opacity(0.3)
-                        .edgesIgnoringSafeArea(.all)
-                        .onTapGesture {
-                            withAnimation {
-                                isNewFolderVisible = false
-                            }
-                        }
-
-                    CreateNewFolderView(isVisible: $isNewFolderVisible, onFolderCreated: {
-                           fetchFolders()
-                           isNewFolderVisible = false
-                       })
-                       .transition(.scale)
-                       .zIndex(1)
+                    OverlayView(isVisible: $isNewFolderVisible) {
+                        CreateNewFolderView(isVisible: $isNewFolderVisible, onFolderCreated: {
+                            fetchFolders()
+                            isNewFolderVisible = false
+                        })
+                    }
                 }
             }
         }
         .navigationBarBackButtonHidden(true)
     }
-    
-   
 
-    // Fetch folders from the backend
     private func fetchFolders() {
         isLoading = true
         errorMessage = nil
@@ -154,11 +62,14 @@ struct HomePageView: View {
                 isLoading = false
                 switch result {
                 case .success(let response):
-                    // Check if the response contains the "folders" array
-                    if let foldersData = response["folders"] as? [[String: Any]] {
-                        // Extract folder names from the dictionaries in the "folders" array
+                    // Ensure the response is a dictionary and then extract the "folders" key
+                    if let responseDict = response as? [String: Any], let foldersData = responseDict["folders"] as? [[String: Any]] {
+                        // Map the folder data into the desired format
                         self.folders = foldersData.compactMap { folderData in
-                            return folderData["name"] as? String
+                            if let id = folderData["id"] as? Int, let name = folderData["name"] as? String {
+                                return (id: "\(id)", name: name) // Convert id to String to match your model
+                            }
+                            return nil
                         }
                     }
                 case .failure(let error):
@@ -170,13 +81,120 @@ struct HomePageView: View {
 
 }
 
+// MARK: - Header View
+struct HeaderView: View {
+    @Binding var isProfilePopupVisible: Bool
+    @Binding var isNewFolderVisible: Bool
 
-extension View {
-    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
-        clipShape(RoundedCorner(radius: radius, corners: corners))
+    var body: some View {
+        ZStack {
+            LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color(hex: "4D4D9A")]),
+                           startPoint: .top,
+                           endPoint: .bottom)
+                .frame(height: 190)
+                .clipShape(RoundedCorner(radius: 30, corners: [.bottomLeft, .bottomRight]))
+                .edgesIgnoringSafeArea(.all)
+                .shadow(radius: 5)
+
+            VStack(spacing: 10) {
+                HStack {
+                    Text("Flashify")
+                        .font(Font.custom("Teko-Bold", size: 36))
+                        .foregroundColor(.white)
+                    Spacer()
+                    Button(action: {
+                        withAnimation {
+                            isProfilePopupVisible.toggle()
+                        }
+                    }) {
+                        Image(systemName: "person.crop.circle")
+                            .resizable()
+                            .frame(width: 28, height: 28)
+                            .foregroundColor(.white)
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top, -50.0)
+
+                HStack {
+                    TextField("Search folders", text: .constant(""))
+                        .padding(10)
+                        .background(Color.white)
+                        .cornerRadius(10)
+                    Button(action: {
+                        withAnimation {
+                            isNewFolderVisible.toggle()
+                        }
+                    }) {
+                        Image(systemName: "plus.square.fill")
+                            .resizable()
+                            .frame(width: 28, height: 28)
+                            .foregroundColor(Color(hex: "7B83EB"))
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 30.0)
+            }
+        }
     }
 }
 
+// MARK: - Folder List View
+struct FolderListView: View {
+    @Binding var folders: [(id: String, name: String)]
+    @Binding var selectedFolder: String?
+
+    var body: some View {
+        ScrollView {
+            LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 3), spacing: 20) {
+                ForEach(folders, id: \.id) { folder in
+                    NavigationLink(destination: FolderView(folderName: folder.name, folderId: folder.id), tag: folder.id, selection: $selectedFolder) {
+                        Button(action: {
+                            selectedFolder = folder.id
+                        }) {
+                            VStack {
+                                Image(systemName: "folder")
+                                    .resizable()
+                                    .frame(width: 60, height: 50)
+                                    .foregroundColor(Color(hex: "7B83EB"))
+                                Text(folder.name)
+                                    .font(Font.custom("Teko-Bold", size: 16))
+                                    .foregroundColor(Color(hex: "4D4D9A"))
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+            }
+            .padding(.horizontal)
+        }
+    }
+}
+
+// MARK: - Overlay View (for Profile and New Folder)
+struct OverlayView<Content: View>: View {
+    @Binding var isVisible: Bool
+    let content: Content
+
+    init(isVisible: Binding<Bool>, @ViewBuilder content: () -> Content) {
+        self._isVisible = isVisible
+        self.content = content()
+    }
+
+    var body: some View {
+        Color.black.opacity(0.3)
+            .edgesIgnoringSafeArea(.all)
+            .onTapGesture {
+                withAnimation {
+                    isVisible = false
+                }
+            }
+            .overlay(content)
+    }
+}
+
+// MARK: - Custom Rounded Corner Shape
 struct RoundedCorner: Shape {
     var radius: CGFloat
     var corners: UIRectCorner
