@@ -8,12 +8,15 @@ struct HomePageView: View {
     @State private var folders: [(id: String, name: String)] = []  // Store both folderId and folderName
     @State private var isLoading: Bool = false
     @State private var errorMessage: String? = nil
-
+    @State private var searchText: String = ""
+    
+    
     var body: some View {
         NavigationView {
             ZStack {
                 VStack {
-                    HeaderView(isProfilePopupVisible: $isProfilePopupVisible, isNewFolderVisible: $isNewFolderVisible)
+                    HeaderView(isProfilePopupVisible: $isProfilePopupVisible, isNewFolderVisible: $isNewFolderVisible,
+                        searchText: $searchText)
                     
                     if isLoading {
                         ProgressView("Loading Folders...")
@@ -27,7 +30,8 @@ struct HomePageView: View {
                             .padding()
                     }
 
-                    FolderListView(folders: $folders, selectedFolder: $selectedFolder)
+                    FolderListView(folders: $folders, selectedFolder: $selectedFolder, searchText: $searchText)
+
                 }
                 .background(Color(hex: "E8EBFA").edgesIgnoringSafeArea(.all))
                 .onAppear {
@@ -85,7 +89,8 @@ struct HomePageView: View {
 struct HeaderView: View {
     @Binding var isProfilePopupVisible: Bool
     @Binding var isNewFolderVisible: Bool
-
+    @Binding var searchText: String
+    
     var body: some View {
         ZStack {
             LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color(hex: "4D4D9A")]),
@@ -117,7 +122,7 @@ struct HeaderView: View {
                 .padding(.top, -50.0)
 
                 HStack {
-                    TextField("Search folders", text: .constant(""))
+                    TextField("Search folders", text:$searchText)
                         .padding(10)
                         .background(Color.white)
                         .cornerRadius(10)
@@ -143,11 +148,16 @@ struct HeaderView: View {
 struct FolderListView: View {
     @Binding var folders: [(id: String, name: String)]
     @Binding var selectedFolder: String?
+    @Binding var searchText: String  // Accept searchText as a binding
+
+    var filteredFolders: [(id: String, name: String)] {
+        folders.filter { searchText.isEmpty || $0.name.localizedCaseInsensitiveContains(searchText) }
+    }
 
     var body: some View {
         ScrollView {
             LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 3), spacing: 20) {
-                ForEach(folders, id: \.id) { folder in
+                ForEach(filteredFolders, id: \.id) { folder in
                     NavigationLink(destination: FolderView(folderName: folder.name, folderId: folder.id), tag: folder.id, selection: $selectedFolder) {
                         Button(action: {
                             selectedFolder = folder.id
@@ -171,6 +181,7 @@ struct FolderListView: View {
         }
     }
 }
+
 
 // MARK: - Overlay View (for Profile and New Folder)
 struct OverlayView<Content: View>: View {
