@@ -174,13 +174,37 @@ struct FolderListView: View {
                             .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(PlainButtonStyle())
+                        .contextMenu {
+                            Button(role: .destructive) {
+                                deleteFolder(folderId: folder.id)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
                     }
                 }
             }
             .padding(.horizontal)
         }
     }
+
+    private func deleteFolder(folderId: String) {
+        guard let folderIdInt = Int(folderId) else { return }
+
+        FolderNetworkManager.shared.deleteFolder(id: folderIdInt) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    // Remove the deleted folder from the list
+                    folders.removeAll { $0.id == folderId }
+                case .failure(let error):
+                    print("Failed to delete folder: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
 }
+
 
 
 // MARK: - Overlay View (for Profile and New Folder)
