@@ -28,7 +28,7 @@ struct CreateNoteView: View {
             
             HStack {
                 Button(action: { createOption = "Manually" }) {
-                    Text("✓ Manually")
+                    Text("Manually")
                         .padding()
                         .background(createOption == "Manually" ? Color.black : Color.gray.opacity(0.3))
                         .foregroundColor(createOption == "Manually" ? .white : .black)

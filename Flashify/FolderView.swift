@@ -206,8 +206,15 @@ struct FolderView: View {
 
                 VStack {
                     if selectedTab == "Flashcards" {
-                        CreateFlashcardView()
-                    } else if let folderIdInt = Int(folderId) {
+                        CreateFlashcardView(
+                                folderId: Int(folderId) ?? 0,
+                                isVisible: $showCreatePopup,
+                                onCreated: {
+                                    fetchFlashcards()
+                                }
+                            )
+                    }
+                    else if let folderIdInt = Int(folderId) {
                         CreateNoteView(folderId: folderIdInt, isVisible: $showCreatePopup, onCreated: {
                                    fetchNotes()
                                })
