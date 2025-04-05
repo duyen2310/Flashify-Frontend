@@ -67,5 +67,52 @@ class NoteNetworkManager {
             }
         }.resume()
     }
+    
+    func createNote(folderId: Int, title: String, note: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        let urlString = "\(baseURL)/\(folderId)"
+        
+        guard let url = URL(string: urlString) else {
+            completion(.failure(NSError(domain: "Invalid URL", code: 0, userInfo: nil)))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        guard let token = getAccessToken() else {
+            completion(.failure(NetworkError.unauthorized))
+            return
+        }
+        
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        let requestBody: [String: Any] = [
+            "title": title,
+            "note": note
+        ]
+        
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: requestBody, options: [])
+        } catch {
+            completion(.failure(error))
+            return
+        }
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            
+            guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
+                completion(.failure(NSError(domain: "Server Error", code: 3, userInfo: nil)))
+                return
+            }
+            
+            completion(.success(()))
+        }.resume()
+    }
+
 }
 
