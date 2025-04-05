@@ -9,7 +9,8 @@ import SwiftUI
 struct ChapterNoteView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var isVisible: Bool
-    @State private var messages: String = "Calculus studies change using limits, derivatives, and integrals. Limits define function behavior near points. Derivatives measure rates of change, like velocity. Basic rules include power, product, quotient, and chain rules. Integrals find areas under curves. Calculus studies change using limits, derivatives, and integrals. Limits define function behavior near points. Derivatives measure rates of change, like velocity. Basic rules include power, product, quotient, and chain rules. Integrals find areas under curves. Limits define function behavior near points. Derivatives measure rates of change, like velocity. Basic rules include power, product, quotient, and chain rules. Integrals find areas under curves."
+    let note: (id: String, folderId: Int, note: String, title: String)
+    @State private var flipped: Bool = false
     
     var body: some View {
         VStack {
@@ -28,7 +29,7 @@ struct ChapterNoteView: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text(messages)
+                    Text(note.note)
                         .font(Font.custom("Teko-Bold", size: 25))
                         .foregroundColor(Color(hex: "4D4D9A"))
                 }

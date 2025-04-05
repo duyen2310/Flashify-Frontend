@@ -17,9 +17,11 @@ struct FolderView: View {
     
     @State private var flashcards: [(id: String, folderId: String, question: String, answer: String)] = []
     @State private var notes: [(id: String, folderId: String, note: String, title: String)] = []
+    @State private var selectedNote: (id: String, folderId: Int, note: String, title: String)?
     @State private var selectedFlashcard: (id: String, folderId: Int, question: String, answer: String)?
 
     let defaultFlashcard = (id: "0", folderId: 0, question: "Default Question", answer: "Default Answer")
+    let defaultNote = (id: "0", folderId: 0, note: "Default Note", title: "Default Title")
 
     var body: some View {
         ZStack {
@@ -107,6 +109,7 @@ struct FolderView: View {
                             VStack(spacing: 12) {
                                 ForEach(notes, id: \.id) { note in
                                     Button(action: {
+                                        selectNote(note)
                                         showChapter = true
                                     }) {
                                         Text(note.title)
@@ -168,7 +171,7 @@ struct FolderView: View {
                 Color.black.opacity(0.3).edgesIgnoringSafeArea(.all)
                     .onTapGesture { showChapter = false }
 
-                ChapterNoteView(isVisible: $showChapter)
+                ChapterNoteView(isVisible: $showChapter, note: selectedNote ?? defaultNote)
                     .frame(width: 380, height: 750)
                     .background(Color.white)
                     .cornerRadius(20)
@@ -218,6 +221,10 @@ struct FolderView: View {
 
     private func selectFlashcard(_ flashcard: (id: String, folderId: String, question: String, answer: String)) {
         selectedFlashcard = (id: flashcard.id, folderId: Int(folderId), question: flashcard.question, answer: flashcard.answer)
+    }
+    
+    private func selectNote(_ note: (id: String, folderId: String, note: String, title: String)) {
+        selectedNote = (id: note.id, folderId: Int(folderId), note: note.note, title: note.title)
     }
 
 
