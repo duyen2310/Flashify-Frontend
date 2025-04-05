@@ -2,82 +2,69 @@ import SwiftUI
 
 struct FolderView: View {
     var folderName: String
-    var folderId: String
-    @State private var isLoading: Bool = false
+    var folderId: Int
+    
+    @State private var isLoading = false
     @State private var errorMessage: String? = nil
-    @State private var showChatify: Bool = false
-    @State private var showFlashcard: Bool = false
-    @State private var showChapter: Bool = false
-    @State private var showCreatePopup: Bool = false
-    @State private var selectedTab: String = "Flashcards"
+    @State private var showChatify = false
+    @State private var showFlashcard = false
+    @State private var showChapter = false
+    @State private var showCreatePopup = false
+    @State private var selectedTab = "Flashcards"
+    
     @Environment(\.dismiss) var dismiss
     @ObservedObject var sessionManager = SessionManager.shared
     
     @State private var flashcards: [(id: String, folderId: String, question: String, answer: String)] = []
     @State private var notes: [(id: String, folderId: String, note: String, title: String)] = []
-    
-    @State private var showCreateFlashcard = false
-    @State private var showCreateNote = false
+    @State private var selectedFlashcard: (id: String, folderId: Int, question: String, answer: String)?
 
-    
+    let defaultFlashcard = (id: "0", folderId: 0, question: "Default Question", answer: "Default Answer")
+
     var body: some View {
         ZStack {
             VStack {
-                // Header bar
+                // Header
                 HStack {
                     Button(action: { dismiss() }) {
                         Image(systemName: "chevron.left")
                             .font(.title2)
                             .foregroundColor(.white)
                     }
-
                     Spacer()
-
                     Text(folderName)
                         .font(Font.custom("Teko-Bold", size: 36))
                         .foregroundColor(.white)
-
                     Spacer()
-
-                    Button(action: {
-                        showCreatePopup.toggle()
-                    }) {
+                    Button(action: { showCreatePopup.toggle() }) {
                         Image(systemName: "plus")
                             .font(.title2)
                             .foregroundColor(.white)
                     }
                 }
                 .padding(.horizontal)
-                .padding(.vertical, 10)
                 .padding(.top, 50)
+                .padding(.bottom, 10)
                 .background(
-                    LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color(hex: "4D4D9A")]), startPoint: .top, endPoint: .bottom)
+                    LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color(hex: "4D4D9A")]),
+                                   startPoint: .top, endPoint: .bottom)
                 )
 
-                // Tab Selector
+                // Tab
                 HStack {
-                    Button(action: { selectedTab = "Flashcards" }) {
-                        Text("Flashcards")
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 16)
-                            .background(selectedTab == "Flashcards" ? Color.black : Color.white)
-                            .foregroundColor(selectedTab == "Flashcards" ? .white : .black)
-                            .cornerRadius(8)
-                    }
-
-                    Button(action: { selectedTab = "Notes" }) {
-                        Text("Notes")
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 16)
-                            .background(selectedTab == "Notes" ? Color.black : Color.white)
-                            .foregroundColor(selectedTab == "Notes" ? .white : .black)
-                            .cornerRadius(8)
+                    ForEach(["Flashcards", "Notes"], id: \.self) { tab in
+                        Button(action: { selectedTab = tab }) {
+                            Text(tab)
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 16)
+                                .background(selectedTab == tab ? Color.black : Color.white)
+                                .foregroundColor(selectedTab == tab ? .white : .black)
+                                .cornerRadius(8)
+                        }
                     }
                 }
                 .padding()
-                .shadow(radius: 2)
 
-                // Content Area
                 ScrollView {
                     if selectedTab == "Flashcards" {
                         if flashcards.isEmpty {
@@ -87,12 +74,15 @@ struct FolderView: View {
                         } else {
                             LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 2), spacing: 16) {
                                 ForEach(flashcards, id: \.id) { flashcard in
-                                    Button(action: { showFlashcard = true }) {
+                                    Button(action: {
+                                        selectFlashcard(flashcard)
+                                        showFlashcard = true
+                                    }) {
                                         VStack {
                                             Text(flashcard.question)
                                                 .font(Font.custom("Teko-Bold", size: 16))
                                                 .foregroundColor(.white)
-                                                .padding()
+                                                .padding(.top)
 
                                             Text(flashcard.answer)
                                                 .font(Font.custom("Teko-Regular", size: 14))
@@ -104,7 +94,6 @@ struct FolderView: View {
                                         .background(LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color(hex: "4D4D9A")]), startPoint: .topLeading, endPoint: .bottomTrailing))
                                         .cornerRadius(12)
                                     }
-                                    .multilineTextAlignment(.center)
                                 }
                             }
                             .padding()
@@ -120,17 +109,14 @@ struct FolderView: View {
                                     Button(action: {
                                         showChapter = true
                                     }) {
-                                        VStack {
-                                            Text(note.title)
-                                                .font(Font.custom("Teko-Bold", size: 26))
-                                                .foregroundColor(.white)
-                                                .padding()
-                                                .frame(maxWidth: .infinity)
-                                                .background(LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color(hex: "4D4D9A")]), startPoint: .topLeading, endPoint: .bottomTrailing))
-                                                .cornerRadius(12)
-                                        }
+                                        Text(note.title)
+                                            .font(Font.custom("Teko-Bold", size: 26))
+                                            .foregroundColor(.white)
+                                            .padding()
+                                            .frame(maxWidth: .infinity)
+                                            .background(LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color(hex: "4D4D9A")]), startPoint: .topLeading, endPoint: .bottomTrailing))
+                                            .cornerRadius(12)
                                     }
-                                    .buttonStyle(PlainButtonStyle())
                                 }
                             }
                             .padding()
@@ -140,7 +126,7 @@ struct FolderView: View {
 
                 Spacer()
 
-                // Chatify button
+                // Chatify Button
                 Button(action: {
                     showChatify.toggle()
                 }) {
@@ -164,15 +150,12 @@ struct FolderView: View {
                 fetchNotes()
             }
 
-            // Flashcard popup
+            // Flashcard Popup
             if showFlashcard {
-                Color.black.opacity(0.3)
-                    .edgesIgnoringSafeArea(.all)
-                    .onTapGesture {
-                        showFlashcard = false
-                    }
+                Color.black.opacity(0.3).edgesIgnoringSafeArea(.all)
+                    .onTapGesture { showFlashcard = false }
 
-                FlashcardView(isVisible: $showFlashcard)
+                FlashcardView(isVisible: $showFlashcard, flashcard: selectedFlashcard ?? defaultFlashcard)
                     .frame(width: 350, height: 300)
                     .background(Color.white)
                     .cornerRadius(20)
@@ -180,13 +163,10 @@ struct FolderView: View {
                     .transition(.scale)
             }
 
-            // Note popup
+            // Chapter Popup
             if showChapter {
-                Color.black.opacity(0.3)
-                    .edgesIgnoringSafeArea(.all)
-                    .onTapGesture {
-                        showChapter = false
-                    }
+                Color.black.opacity(0.3).edgesIgnoringSafeArea(.all)
+                    .onTapGesture { showChapter = false }
 
                 ChapterNoteView(isVisible: $showChapter)
                     .frame(width: 380, height: 750)
@@ -196,31 +176,24 @@ struct FolderView: View {
                     .transition(.scale)
             }
 
-            // Create popup
+            // Create Popup
             if showCreatePopup {
-                Color.black.opacity(0.3)
-                    .edgesIgnoringSafeArea(.all)
-                    .onTapGesture {
-                        showCreatePopup = false
-                    }
+                Color.black.opacity(0.3).edgesIgnoringSafeArea(.all)
+                    .onTapGesture { showCreatePopup = false }
 
                 VStack {
                     if selectedTab == "Flashcards" {
                         CreateFlashcardView(
-                                folderId: Int(folderId) ?? 0,
-                                isVisible: $showCreatePopup,
-                                onCreated: {
-                                    fetchFlashcards()
-                                }
-                            )
-                    }
-                    else if let folderIdInt = Int(folderId) {
-                        CreateNoteView(folderId: folderIdInt, isVisible: $showCreatePopup, onCreated: {
-                                   fetchNotes()
-                               })
+                            folderId: folderId,
+                            isVisible: $showCreatePopup,
+                            onCreated: fetchFlashcards
+                        )
                     } else {
-                        Text("Invalid Folder ID")
-                            .foregroundColor(.red)
+                        CreateNoteView(
+                            folderId: folderId,
+                            isVisible: $showCreatePopup,
+                            onCreated: fetchNotes
+                        )
                     }
                 }
                 .frame(width: 350, height: 450)
@@ -243,27 +216,29 @@ struct FolderView: View {
         }
     }
 
-    
+    private func selectFlashcard(_ flashcard: (id: String, folderId: String, question: String, answer: String)) {
+        selectedFlashcard = (id: flashcard.id, folderId: Int(folderId), question: flashcard.question, answer: flashcard.answer)
+    }
+
+
     private func fetchFlashcards() {
         isLoading = true
         errorMessage = nil
-        
-        FlashcardNetworkManager.shared.getFlashcards(for: Int(folderId) ?? 0) { result in
+
+        FlashcardNetworkManager.shared.getFlashcards(for: folderId) { result in
             DispatchQueue.main.async {
                 isLoading = false
                 switch result {
                 case .success(let response):
-                    if let responseDict = response as? [String: Any], let flashcardsData = responseDict["flashcards"] as? [[String: Any]] {
-                        self.flashcards = flashcardsData.compactMap { flashcardData in
-                            if let id = flashcardData["id"] as? Int,
-                               let folderId = flashcardData["folder_id"] as? Int,
-                               let question = flashcardData["question"] as? String,
-                               let answer = flashcardData["answer"] as? String {
-                                return (id: "\(id)", folderId: "\(folderId)", question: question, answer: answer)
-                            }
-                            return nil
+                    if let responseDict = response as? [String: Any],
+                       let flashcardsData = responseDict["flashcards"] as? [[String: Any]] {
+                        self.flashcards = flashcardsData.compactMap {
+                            guard let id = $0["id"] as? Int,
+                                  let folderId = $0["folder_id"] as? Int,
+                                  let question = $0["question"] as? String,
+                                  let answer = $0["answer"] as? String else { return nil }
+                            return (id: "\(id)", folderId: "\(folderId)", question: question, answer: answer)
                         }
-                        print("Fetched flashcards: \(self.flashcards)")  // Debugging the fetched flashcards
                     }
                 case .failure(let error):
                     errorMessage = error.localizedDescription
@@ -271,28 +246,25 @@ struct FolderView: View {
             }
         }
     }
-    
+
     private func fetchNotes() {
         isLoading = true
         errorMessage = nil
-        
-        NoteNetworkManager.shared.getNotes(for: Int(folderId) ?? 0) { result in
+
+        NoteNetworkManager.shared.getNotes(for: folderId) { result in
             DispatchQueue.main.async {
                 isLoading = false
                 switch result {
                 case .success(let response):
-                    if let responseDict = response as? [String: Any], let notesData = responseDict["notes"] as? [[String: Any]] {
-                        self.notes = notesData.compactMap { noteData in
-                            // Change id and folder_id to Int, as the response shows them as integers
-                            if let id = noteData["id"] as? Int,
-                               let folderId = noteData["folder_id"] as? Int,
-                               let note = noteData["note"] as? String,
-                               let title = noteData["title"] as? String {
-                                return (id: "\(id)", folderId: "\(folderId)", note: note, title: title)
-                            }
-                            return nil
+                    if let responseDict = response as? [String: Any],
+                       let notesData = responseDict["notes"] as? [[String: Any]] {
+                        self.notes = notesData.compactMap {
+                            guard let id = $0["id"] as? Int,
+                                  let folderId = $0["folder_id"] as? Int,
+                                  let note = $0["note"] as? String,
+                                  let title = $0["title"] as? String else { return nil }
+                            return (id: "\(id)", folderId: "\(folderId)", note: note, title: title)
                         }
-                        print("Fetched notes: \(self.notes)")  // Debugging the fetched notes
                     }
                 case .failure(let error):
                     errorMessage = error.localizedDescription
@@ -303,5 +275,5 @@ struct FolderView: View {
 }
 
 #Preview {
-    FolderView(folderName: "Chemistry", folderId: "4")
+    FolderView(folderName: "Chemistry", folderId: 4)
 }

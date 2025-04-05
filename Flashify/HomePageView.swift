@@ -158,7 +158,7 @@ struct FolderListView: View {
         ScrollView {
             LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 3), spacing: 20) {
                 ForEach(filteredFolders, id: \.id) { folder in
-                    NavigationLink(destination: FolderView(folderName: folder.name, folderId: folder.id), tag: folder.id, selection: $selectedFolder) {
+                    NavigationLink(destination: FolderView(folderName: folder.name, folderId: Int(folder.id) ?? 00), tag: folder.id, selection: $selectedFolder) {
                         Button(action: {
                             selectedFolder = folder.id
                         }) {

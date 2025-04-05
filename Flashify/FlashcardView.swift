@@ -9,8 +9,7 @@ import SwiftUI
 struct FlashcardView: View {
     @Environment(\.dismiss) var dismiss
     @Binding var isVisible: Bool
-    @State private var question: String = "In what way does calculus contribute to the field of engineering?"
-    @State private var answer: String = "very very much"
+    let flashcard: (id: String, folderId: Int, question: String, answer: String)
     @State private var flipped: Bool = false
     
     var body: some View {
@@ -21,9 +20,9 @@ struct FlashcardView: View {
                 }
             }) {
                 ZStack {
-                    CardFace(content: question, isShowing: !flipped)
+                    CardFace(content: flashcard.question, isShowing: !flipped)
                     
-                    CardFace(content: answer, isShowing: flipped)
+                    CardFace(content: flashcard.answer, isShowing: flipped)
                         .rotation3DEffect(
                             .degrees(180),
                             axis: (x: 0, y: 1, z: 0)
@@ -56,7 +55,3 @@ struct CardFace: View {
     }
 }
 
-
-#Preview {
-    FlashcardView(isVisible: .constant(true))
-}
