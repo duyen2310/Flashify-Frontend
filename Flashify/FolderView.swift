@@ -129,9 +129,13 @@ struct FolderView: View {
 
                 Spacer()
 
-                // Chatify Button
                 Button(action: {
-                    showChatify.toggle()
+                    if let selectedNote = selectedNote {
+                        print("Selected note id: \(selectedNote.id)") // Debug print
+                        showChatify.toggle() // Only toggle if selectedNote is not nil
+                    } else {
+                        print("No note selected") // Debug print if selectedNote is nil
+                    }
                 }) {
                     Image(systemName: "command")
                         .font(.largeTitle)
@@ -141,9 +145,13 @@ struct FolderView: View {
                         .shadow(radius: 4)
                 }
                 .sheet(isPresented: $showChatify) {
-                    ChatifyView()
+                    if let selectedNote = selectedNote {
+                        // Ensure selectedNote is valid and pass its id as an integer
+                        ChatifyView(folderId: folderId, noteId: Int(selectedNote.id) ?? 0)
+                    }
                 }
                 .padding(.bottom, 30)
+
             }
             .edgesIgnoringSafeArea(.top)
             .background(Color(UIColor.systemGroupedBackground).edgesIgnoringSafeArea(.all))

@@ -40,7 +40,6 @@ class FolderNetworkManager {
                 // Try to decode the response into a dictionary
                 if let jsonResponse = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                     completion(.success(jsonResponse))
-//                    print(jsonResponse)
                 } else {
                     completion(.failure(NSError(domain: "Invalid data format", code: 1, userInfo: nil)))
                 }
@@ -63,7 +62,6 @@ class FolderNetworkManager {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        print("Request Headers: \(request.allHTTPHeaderFields ?? [:])")
 
         guard let token = keychain.get("accessToken") else {
             completion(.failure(NetworkError.unauthorized))

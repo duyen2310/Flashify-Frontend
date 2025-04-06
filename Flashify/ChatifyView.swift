@@ -1,11 +1,6 @@
-//
-//  ChatifyView.swift
-//  Flashify
-//
-//  Created by Ky Duyen on 1/3/25.
-//
-
 import SwiftUI
+
+// Inject AINetworkManager into the view
 struct ChatifyView: View {
     @Environment(\.dismiss) var dismiss
     @State private var message: String = ""
@@ -13,6 +8,11 @@ struct ChatifyView: View {
         "Hey, can you explain a topic for me?",
         "Sure. Please tell me the topic!"
     ]
+    @State private var isLoading: Bool = false
+    @State private var responseMessage: String = ""
+
+    var folderId: Int
+    var noteId: Int
 
     var body: some View {
         VStack {
@@ -28,13 +28,24 @@ struct ChatifyView: View {
                 }
             }
             .padding()
-//DUMB BA DA
-//NEED TO BE CHANGED THE WHOLE LOGIC FRONT END FOR BACKEND LATER
-//CONNECT WITH OPENAI
+            
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
                     ForEach(messages, id: \.self) { msg in
                         Text(msg)
+                            .padding()
+                            .background(Color(hex: "E8EBFA"))
+                            .cornerRadius(10)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    if isLoading {
+                        Text("Thinking... Please wait.")
+                            .padding()
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(10)
+                    }
+                    if !responseMessage.isEmpty {
+                        Text(responseMessage)
                             .padding()
                             .background(Color(hex: "E8EBFA"))
                             .cornerRadius(10)
@@ -53,6 +64,8 @@ struct ChatifyView: View {
                 Button(action: {
                     if !message.isEmpty {
                         messages.append(message)
+                        isLoading = true
+                        interactWithFlashcardOrNote(message: message)
                         message = ""
                     }
                 }) {
@@ -65,4 +78,49 @@ struct ChatifyView: View {
         }
         .background(Color.white.edgesIgnoringSafeArea(.all))
     }
+
+    func interactWithFlashcardOrNote(message: String) {
+        if message.contains("flashcard") {
+            interactWithFlashcard(prompt: message)
+        } else if message.contains("note") {
+            interactWithNote(prompt: message)
+        } else {
+            // Handle unknown cases, maybe some default behavior
+            responseMessage = "One moment, loading"
+            isLoading = false
+        }
+    }
+
+    func interactWithFlashcard(prompt: String) {
+        AINetworkManager.shared.interactWithFlashcard(folderId: folderId, prompt: prompt) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let response):
+                    messages.append(response)
+                    isLoading = false
+                case .failure(let error):
+                    messages.append("Error: \(error.localizedDescription)")
+                    isLoading = false
+                }
+            }
+        }
+    }
+
+    func interactWithNote(prompt: String) {
+        AINetworkManager.shared.interactWithNote(noteId: noteId, prompt: prompt) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let response):
+                    messages.append(response)
+                    isLoading = false
+                case .failure(let error):
+                    messages.append("Error: \(error.localizedDescription)")
+                    isLoading = false
+                }
+            }
+        }
+    }
+}
+#Preview {
+    ChatifyView(folderId: 1, noteId:1)
 }

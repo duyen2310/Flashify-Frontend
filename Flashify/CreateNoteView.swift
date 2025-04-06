@@ -17,6 +17,9 @@ struct CreateNoteView: View {
     @State private var selectedFileURL: URL?
     @State private var showingFileImporter = false
     @Binding var isVisible: Bool
+    @State private var generatedNote: String = ""
+    
+    
     var onCreated: () -> Void
 
     var body: some View {
@@ -117,7 +120,38 @@ struct CreateNoteView: View {
                             }
                         }
                     } else {
-                        print("Generating flashcards for topic")
+                        if generatedNote.isEmpty {
+                            guard let fileURL = selectedFileURL else { return }
+                            
+                            AINetworkManager.shared.generateNote(fileURL: fileURL) { result in
+                                DispatchQueue.main.async {
+                                    switch result {
+                                    case .success(let note):
+                                        self.generatedNote = note
+                                        print("Generated note successfully")
+                                    case .failure(let error):
+                                        print("Failed to generate note: \(error.localizedDescription)")
+                                    }
+                                }
+                            }
+                        } else {
+                            NoteNetworkManager.shared.createNote(
+                                folderId: folderId,
+                                title: "DEFAULT TITLE",
+                                note: generatedNote
+                            ) { result in
+                                DispatchQueue.main.async {
+                                    switch result {
+                                    case .success:
+                                        print("Generated note uploaded successfully")
+                                        onCreated()
+                                        isVisible = false
+                                    case .failure(let error):
+                                        print("Failed to upload generated note: \(error.localizedDescription)")
+                                    }
+                                }
+                            }
+                        }
                     }
                 }) {
                     Text("Add")

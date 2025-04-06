@@ -73,7 +73,6 @@ struct CreateNewFolderView: View {
         }
     }
     
-    // Function to create the folder by calling the network manager
     private func createFolder() {
         guard !name.isEmpty else {
             errorMessage = "Folder name is required."
@@ -88,12 +87,10 @@ struct CreateNewFolderView: View {
                 isLoading = false
                 switch result {
                 case .success(_):
-                    // Folder created successfully, dismiss the view
                     dismiss()
                     onFolderCreated?()
                 case .failure(let error):
-                    // Handle the error (e.g., show an error message)
-                    errorMessage = error.localizedDescription
+                   errorMessage = error.localizedDescription
                 }
             }
         }

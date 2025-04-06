@@ -50,10 +50,7 @@ class NoteNetworkManager {
                 return
             }
             
-            // Debugging: Print response
-            if let responseString = String(data: data, encoding: .utf8) {
-                print("Response: \(responseString)")
-            }
+     
             
             do {
                 // Decode JSON response

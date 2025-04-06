@@ -49,11 +49,7 @@ class FlashcardNetworkManager {
                 completion(.failure(NSError(domain: "No data received", code: 1, userInfo: nil)))
                 return
             }
-            
-            // Debugging: Print response
-            if let responseString = String(data: data, encoding: .utf8) {
-                print("Response: \(responseString)")
-            }
+      
             
             do {
                 // Decode JSON response

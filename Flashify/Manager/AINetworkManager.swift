@@ -58,9 +58,6 @@ class AINetworkManager{
             }
 
             if let data = data {
-                if let responseString = String(data: data, encoding: .utf8) {
-                       print("Response: \(responseString)")
-                   }
                 do {
                     // Parse the response JSON into a dictionary
                     if let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
@@ -80,36 +77,31 @@ class AINetworkManager{
 
 
     
-    func generateNote(text: String?, fileData: Data?, fileName: String?, completion: @escaping (Result<String, Error>) -> Void) {
-        var request = URLRequest(url: URL(string: "\(baseURL)/note")!)
-        request.httpMethod = "POST"
-
+    func generateNote(fileURL: URL, completion: @escaping (Result<String, Error>) -> Void) {
+        let url = URL(string: "\(baseURL)/note")!
+        
+        var request = URLRequest(url: url)
         guard let token = getAccessToken() else {
             completion(.failure(NetworkError.unauthorized))
             return
         }
-
+        request.httpMethod = "POST"
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
         let boundary = UUID().uuidString
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
 
         var body = Data()
 
-        if let text = text {
-            body.append("--\(boundary)\r\n".data(using: .utf8)!)
-            body.append("Content-Disposition: form-data; name=\"text\"\r\n\r\n".data(using: .utf8)!)
-            body.append("\(text)\r\n".data(using: .utf8)!)
-        }
-
-        if let fileData = fileData, let fileName = fileName {
-            body.append("--\(boundary)\r\n".data(using: .utf8)!)
-            body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(fileName)\"\r\n".data(using: .utf8)!)
-            body.append("Content-Type: application/octet-stream\r\n\r\n".data(using: .utf8)!)
-            body.append(fileData)
-            body.append("\r\n".data(using: .utf8)!)
-        }
-
+        let filename = fileURL.lastPathComponent
+        let fileData = try? Data(contentsOf: fileURL)
+        let mimeType = "text/plain" // or "application/json" if .json
+        
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(filename)\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
+        body.append(fileData ?? Data())
+        body.append("\r\n".data(using: .utf8)!)
+        
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)
         request.httpBody = body
 
@@ -119,15 +111,36 @@ class AINetworkManager{
                 return
             }
 
-            guard let data = data, let note = String(data: data, encoding: .utf8) else {
-                completion(.failure(NetworkError.invalidResponse))
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode) else {
+                completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid response"])))
                 return
             }
 
-            completion(.success(note))
+            if let data = data {
+                do {
+                    // Try to parse the response JSON
+                    if let jsonResponse = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                       let note = jsonResponse["note"] as? String {
+                        // Success - passing the parsed note
+                        completion(.success(note))
+                    } else {
+                        // Failure due to an invalid response structure
+                        completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid JSON structure"])))
+                    }
+                } catch {
+                    // If parsing the JSON fails
+                    completion(.failure(error))
+                }
+            } else {
+                // No data received
+                completion(.failure(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "No data received"])))
+            }
         }.resume()
     }
 
+    
+    
     func interactWithFlashcard(folderId: Int, prompt: String, completion: @escaping (Result<String, Error>) -> Void) {
         var request = URLRequest(url: URL(string: "\(baseURL)/flashcard/\(folderId)")!)
         request.httpMethod = "POST"
@@ -161,9 +174,20 @@ class AINetworkManager{
                 completion(.failure(NetworkError.invalidResponse))
                 return
             }
+            
+            do {
+                            if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                               let responseText = json["response"] as? String {
+                                completion(.success(responseText)) // Just return the response text
+                            } else {
+                                completion(.failure(NSError(domain: "Invalid response format", code: -1, userInfo: nil)))
+                            }
+                        } catch {
+                            completion(.failure(error))
+                        }
+                    }
 
-            completion(.success(responseString))
-        }.resume()
+                    .resume()
     }
 
     func interactWithNote(noteId: Int, prompt: String, completion: @escaping (Result<String, Error>) -> Void) {
@@ -199,9 +223,19 @@ class AINetworkManager{
                 completion(.failure(NetworkError.invalidResponse))
                 return
             }
+            do {
+                            if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+                               let responseText = json["response"] as? String {
+                                completion(.success(responseText)) // Just return the response text
+                            } else {
+                                completion(.failure(NSError(domain: "Invalid response format", code: -1, userInfo: nil)))
+                            }
+                        } catch {
+                            completion(.failure(error))
+                        }
+                    }
 
-            completion(.success(responseString))
-        }.resume()
+                    .resume()
     }
 
 
