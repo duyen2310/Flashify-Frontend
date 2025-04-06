@@ -11,6 +11,9 @@ struct FolderView: View {
     @State private var showChapter = false
     @State private var showCreatePopup = false
     @State private var selectedTab = "Flashcards"
+    @State private var showDeleteConfirmation = false
+    @State private var deleteFlashcardId: String? = nil
+    @State private var deleteNoteId: String? = nil
     
     @Environment(\.dismiss) var dismiss
     @ObservedObject var sessionManager = SessionManager.shared
@@ -76,26 +79,34 @@ struct FolderView: View {
                         } else {
                             LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 2), spacing: 16) {
                                 ForEach(flashcards, id: \.id) { flashcard in
-                                    Button(action: {
-                                        selectFlashcard(flashcard)
-                                        showFlashcard = true
-                                    }) {
-                                        VStack {
-                                            Text(flashcard.question)
-                                                .font(Font.custom("Teko-Bold", size: 16))
-                                                .foregroundColor(.white)
-                                                .padding(.top)
-
-                                            Text(flashcard.answer)
-                                                .font(Font.custom("Teko-Regular", size: 14))
-                                                .foregroundColor(.gray)
-                                                .padding(.bottom)
-                                        }
+                                    let flashcardView = VStack {
+                                        Text(flashcard.question)
+                                            .font(Font.custom("Teko-Bold", size: 16))
+                                            .foregroundColor(.white)
+                                            .padding(.top)
+                                        
+                                        Text(flashcard.answer)
+                                            .font(Font.custom("Teko-Regular", size: 14))
+                                            .foregroundColor(.gray)
+                                            .padding(.bottom)
+                                    }
                                         .frame(height: 120)
                                         .frame(maxWidth: .infinity)
                                         .background(LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color(hex: "4D4D9A")]), startPoint: .topLeading, endPoint: .bottomTrailing))
                                         .cornerRadius(12)
+                                    
+                                    Button(action: {
+                                        selectFlashcard(flashcard)
+                                        showFlashcard = true
+                                    }) {
+                                        flashcardView
                                     }
+                                    .simultaneousGesture(
+                                        LongPressGesture().onEnded { _ in
+                                            self.deleteFlashcardId = flashcard.id
+                                            self.showDeleteConfirmation = true
+                                        }
+                                    )
                                 }
                             }
                             .padding()
@@ -108,18 +119,26 @@ struct FolderView: View {
                         } else {
                             VStack(spacing: 12) {
                                 ForEach(notes, id: \.id) { note in
+                                    let noteView = Text(note.title)
+                                        .font(Font.custom("Teko-Bold", size: 26))
+                                        .foregroundColor(.white)
+                                        .padding()
+                                        .frame(maxWidth: .infinity)
+                                        .background(LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color(hex: "4D4D9A")]), startPoint: .topLeading, endPoint: .bottomTrailing))
+                                        .cornerRadius(12)
+                                    
                                     Button(action: {
                                         selectNote(note)
                                         showChapter = true
                                     }) {
-                                        Text(note.title)
-                                            .font(Font.custom("Teko-Bold", size: 26))
-                                            .foregroundColor(.white)
-                                            .padding()
-                                            .frame(maxWidth: .infinity)
-                                            .background(LinearGradient(gradient: Gradient(colors: [Color(hex: "7B83EB"), Color(hex: "4D4D9A")]), startPoint: .topLeading, endPoint: .bottomTrailing))
-                                            .cornerRadius(12)
+                                        noteView
                                     }
+                                    .simultaneousGesture(
+                                        LongPressGesture().onEnded { _ in
+                                            self.deleteNoteId = note.id
+                                            self.showDeleteConfirmation = true
+                                        }
+                                    )
                                 }
                             }
                             .padding()
@@ -224,6 +243,51 @@ struct FolderView: View {
                 )
                 .transition(.scale)
             }
+
+            // Delete Confirmation Popup
+            if showDeleteConfirmation {
+                Color.black.opacity(0.3).edgesIgnoringSafeArea(.all)
+                    .onTapGesture { showDeleteConfirmation = false }
+
+                VStack {
+                    Text("Are you sure you want to delete?")
+                        .foregroundColor(.black)
+                        .padding()
+
+                    HStack {
+                        Button(action: {
+                            if let flashcardId = deleteFlashcardId {
+                                deleteFlashcard(id: flashcardId)
+                            } else if let noteId = deleteNoteId {
+                                deleteNote(id: noteId)
+                            }
+                            showDeleteConfirmation = false
+                        }) {
+                            Text("Yes")
+                                .padding()
+                                .background(Color.red)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                        }
+
+                        Button(action: {
+                            showDeleteConfirmation = false
+                        }) {
+                            Text("No")
+                                .padding()
+                                .background(Color.green)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                        }
+                    }
+                    .padding()
+                }
+                .frame(width: 300, height: 200)
+                .background(Color.white)
+                .cornerRadius(20)
+                .shadow(radius: 10)
+                .transition(.scale)
+            }
         }
     }
 
@@ -234,7 +298,6 @@ struct FolderView: View {
     private func selectNote(_ note: (id: String, folderId: String, note: String, title: String)) {
         selectedNote = (id: note.id, folderId: Int(folderId), note: note.note, title: note.title)
     }
-
 
     private func fetchFlashcards() {
         isLoading = true
@@ -287,8 +350,31 @@ struct FolderView: View {
             }
         }
     }
+
+    private func deleteFlashcard(id: String) {
+        FlashcardNetworkManager.shared.deleteFlashcard(id: id) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    flashcards.removeAll { $0.id == id }
+                case .failure(let error):
+                    errorMessage = error.localizedDescription
+                }
+            }
+        }
+    }
+
+    private func deleteNote(id: String) {
+        NoteNetworkManager.shared.deleteNote(id: id) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    notes.removeAll { $0.id == id }
+                case .failure(let error):
+                    errorMessage = error.localizedDescription
+                }
+            }
+        }
+    }
 }
 
-#Preview {
-    FolderView(folderName: "Chemistry", folderId: 4)
-}

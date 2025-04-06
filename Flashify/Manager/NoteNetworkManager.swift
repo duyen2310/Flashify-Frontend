@@ -110,6 +110,35 @@ class NoteNetworkManager {
             completion(.success(()))
         }.resume()
     }
+    
+    func deleteNote(id: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        guard let url = URL(string: "\(baseURL)/\(id)") else {
+            completion(.failure(NSError(domain: "Invalid URL", code: 0, userInfo: nil)))
+            return
+        }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        
+        if let token = SessionManager.shared.accessToken {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        
+        URLSession.shared.dataTask(with: request) { _, response, error in
+            if error != nil {
+                print("Error deleting folder: \(error!)")
+                completion(.failure(error ?? NSError(domain: "Unknown error", code: 0, userInfo: nil)))
+                return
+            }
+            
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 204 {
+                completion(.success(()))
+            } else {
+                print("Error response: \(String(describing: response))")
+                completion(.failure(NSError(domain: "Invalid response", code: 0, userInfo: nil)))
+            }
+        }.resume()
+    }
 
 }
 
