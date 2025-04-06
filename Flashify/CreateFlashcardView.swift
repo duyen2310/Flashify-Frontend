@@ -11,7 +11,9 @@ struct CreateFlashcardView: View {
     @State private var createOption: String = "Manually"
     @State private var selectedFileURL: URL?
     @State private var showingFileImporter = false
-    
+    @State private var generatedFlashcards: [(answer:String, question:String)] = []
+
+
     var body: some View {
         ZStack {
             Color.clear.edgesIgnoringSafeArea(.all)
@@ -118,8 +120,56 @@ struct CreateFlashcardView: View {
                                 }
                             }
                         } else {
-                            print("Generate option selected (not implemented yet)")
+                            // GENERATE FROM FILE
+                            if generatedFlashcards.isEmpty {
+                                guard let fileURL = selectedFileURL else { return }
+                                
+                                AINetworkManager.shared.generateFlashcards(
+                                    fileURL: fileURL
+                                ) { result in
+                                    DispatchQueue.main.async {
+                                        switch result {
+                                        case .success(let flashcards):
+                                            // Successfully received flashcards, now you can update your state
+                                            self.generatedFlashcards = flashcards.compactMap { dict in
+                                                if let question = dict["question"], let answer = dict["answer"] {
+                                                    return (answer: answer, question: question)
+                                                }
+                                                return nil
+                                            }
+                                            print("Generated flashcards successfully")
+                                        case .failure(let error):
+                                            print("Failed to generate flashcards: \(error.localizedDescription)")
+                                        }
+                                    }
+                                }
+
+                            } else {
+                                // UPLOAD GENERATED FLASHCARDS
+                                let dispatchGroup = DispatchGroup()
+                                
+                                for flashcard in generatedFlashcards {
+                                    dispatchGroup.enter()
+                                    FlashcardNetworkManager.shared.createFlashcard(
+                                        folderId: folderId,
+                                        question: flashcard.question,
+                                        answer: flashcard.answer
+                                    ) { result in
+                                        if case .failure(let error) = result {
+                                            print("Failed to upload flashcard: \(error.localizedDescription)")
+                                        }
+                                        dispatchGroup.leave()
+                                    }
+                                }
+                                
+                                dispatchGroup.notify(queue: .main) {
+                                    print("All flashcards uploaded")
+                                    onCreated()
+                                    isVisible = false
+                                }
+                            }
                         }
+
                     }) {
                         Text("Add")
                             .padding()
